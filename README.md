@@ -2,7 +2,9 @@
 
 One command on a Proxmox VE host gives you a Debian LXC with Docker and one or
 more **GitHub Actions self-hosted runners**. Each runner is a Docker container
-whose image is modeled on GitHub's hosted `ubuntu-24.04` runner.
+whose image is modeled on GitHub's hosted `ubuntu-24.04` runner. The image is
+downloaded prebuilt, and the caches stay inside the LXC (see [Caching](#caching)),
+so CI is fast even on small hosts.
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/quavon-dev/quavon-docker-runners/main/install.sh)"
@@ -46,6 +48,8 @@ jobs:
 | Docker in jobs | `docker build/run`, `services:`, `container:` jobs, buildx, compose |
 | Networking | `--network host`, so `services:` ports work on `localhost` like on hosted runners |
 | Hosted-runner parity | user `runner` (uid 1001) with passwordless `sudo`, `/opt/hostedtoolcache`, `ImageOS=ubuntu24`, so `actions/setup-*` work |
+| Caching | `actions/cache`, `setup-*` caches and BuildKit `type=gha` served from the LXC, Docker Hub pull-through mirror, npm/pip/Go/pnpm/bun/NuGet caches kept between jobs ([Caching](#caching)) |
+| Image | prebuilt on GHCR and pulled, built locally only for changed scripts |
 | Cleanup | containers a job left running (`docker run -d`, `compose up -d`) removed before the next job, workspace wiped, file ownership fixed after container jobs, hourly Docker prune, build cache capped at a quarter of the disk |
 | Full disk | 10% of the disk is held back from jobs, so a full disk can always be cleaned up (see [Full disk](#full-disk)) |
 
@@ -61,8 +65,17 @@ jobs:
 | | PowerShell, Chrome + chromedriver, Firefox + geckodriver |
 | | AWS CLI v2, Azure CLI, Google Cloud CLI, ansible, kind |
 
+The image is pulled from `ghcr.io/quavon-dev/gha-runner:<flavor>-<tree>`, where `<tree>`
+is the git tree hash of `image/`. Only an image built from exactly the scripts in the LXC
+is used. If `image/` has local changes (a fork, an edit) or CI hasn't published that
+version yet, the image is built locally instead. `gha-runners build --local` always
+builds locally; `PREBUILT_IMAGE=` in `/etc/gha-runners/config.env` turns pulling off, or
+points it at your own registry. `.github/workflows/image.yml` publishes all three
+flavors on every change to `image/` and every Monday, so security updates arrive with
+`gha-runners update`.
+
 `full` and `full-plus` are built from thousands of small files. On a host with only
-spinning disks (HDD) or less than 8 GB RAM the first build can take 1-2 hours, so the
+spinning disks (HDD) or less than 8 GB RAM a local build can take 1-2 hours, so the
 installer asks first. On HDDs, ZFS storage is much faster than LVM-thin: the installer
 turns off sync writes there (see [Sizing](#sizing)).
 
@@ -250,7 +263,7 @@ the runners and the cleanup still have room to work when a job fills everything 
 
 - **Before every job**, `gha-cleanup` (built into the runner image) removes the
   workspaces of other repositories (they're wiped before their next job anyway). From
-  80% disk it also removes unused Docker images, volumes and build cache, buildx
+  80% disk it also removes unused Docker images, volumes and build cache, the [caches](#caching), buildx
   builders of cancelled jobs, `/tmp` and the package caches in the runner's home (npm,
   pip, Go, Cargo, Gradle, Maven, NuGet, bun, pnpm). The runner image and the starting
   job's workspace are kept.
@@ -276,6 +289,56 @@ still uses the containerd store; `gha-runners migrate-storage` switches it. That
 the runners, deletes all Docker images and rebuilds the runner image, so the runners
 are offline for one image build.
 
+## Caching
+
+Four caches live in the LXC. They use about 30 MB of RAM together and need no workflow changes.
+
+| Cache | What it speeds up | Where |
+|---|---|---|
+| **Actions cache** | `actions/cache`, `setup-node`/`setup-python`/`setup-go`/`setup-java` with `cache:`, BuildKit `cache-from/to: type=gha` | [github-actions-cache-server](https://github.com/falcondev-oss/github-actions-cache-server) on `docker0:29171`, data in `/var/lib/gha-runners/actions-cache` |
+| **Docker Hub mirror** | `docker pull`, `services:`, `container:` jobs, `FROM` in builds (Docker Hub images only); no Docker Hub rate limits | `registry:3` pull-through cache on `127.0.0.1:29172`, data in `/var/lib/gha-runners/mirror-cache` |
+| **Git checkout cache** | `actions/checkout` fetches only the commits since the last job of the repository (e.g. 50 KB instead of 15 MB), Git LFS objects included | each runner's `.git` per repository, in `/srv/gha-runners/<runner>/_git` |
+| **Package caches** | npm, pip, pnpm, bun, Go modules and build cache, NuGet, anything else under `~/.cache`, even without a cache step | `~/.cache` and `~/.npm` of every runner, shared, in `/var/lib/gha-runners/package-cache` |
+
+- **Actions cache.** Restores come from the LXC's disk instead of GitHub's cloud. The
+  server checks every job's token and keeps caches per repository and branch, with the same
+  rules as GitHub. It is capped at a fifth of the disk and yields when the disk is 70%
+  full (least recently used first). Entries unused for 14 days are removed. The stock
+  runner overwrites the cache URL at every job, so the runner image renames that variable
+  in `Runner.Worker.dll` (`gha-patch-runner`) at every start and after every job.
+  - Only for github.com: GitHub Enterprise Server runners keep using GitHub's cache.
+  - `container:` jobs don't get the URL from the runner. Their cache steps skip the cache
+    unless the job sets `env: ACTIONS_RESULTS_URL: http://172.17.0.1:29171/`.
+  - Artifacts are passed through to GitHub unchanged.
+  - The first job after a runner self-update still uses GitHub's cache.
+- **Docker Hub mirror.** Blobs are kept for 7 days and checked against Docker Hub. If the
+  mirror is down, Docker pulls from Docker Hub directly.
+- **Git checkout cache.** After a job, the repository's `.git` is moved aside (a rename,
+  no copy). Before the next job of that repository on the runner, it's moved back into the
+  empty workspace, keeping only objects, refs and `HEAD` with a fresh config, so hooks and
+  settings of earlier jobs never run. `actions/checkout` then cleans, resets and fetches
+  the difference. If anything doesn't fit, checkout deletes it and clones as usual. Works
+  in ephemeral mode too. A job that doesn't use `actions/checkout` finds only `.git` in its
+  workspace: run `git clone` into a subdirectory there, or turn the cache off.
+- **Package caches.** Every runner in the LXC reads and writes the same caches. In ephemeral
+  mode they survive the container too, so a fresh container doesn't start empty.
+  `GOMODCACHE`, `NUGET_PACKAGES`, `npm_config_store_dir` and `BUN_INSTALL_CACHE_DIR`
+  point into `~/.cache`.
+
+From 80% disk all caches are dropped together with unused images (see [Full disk](#full-disk)).
+They refill on the next jobs. In the `separate` layout every LXC has its own caches.
+`gha-runners doctor` shows their state and size.
+
+Turn a cache off in `/etc/gha-runners/config.env`, then run `bash /opt/quavon-docker-runners/lxc/setup.sh files`
+(the runners restart):
+
+```text
+LOCAL_ACTIONS_CACHE=0
+DOCKER_HUB_MIRROR=0
+GIT_CHECKOUT_CACHE=0
+SHARED_PACKAGE_CACHE=0
+```
+
 ## Persistent vs. ephemeral
 
 | | Persistent (default) | Ephemeral |
@@ -295,12 +358,12 @@ gha-runners remove <name>               # deregister (asks for the removal token
 gha-runners logs <name> -f              # live logs
 gha-runners restart [name]              # restart one or all
 gha-runners shell <name>                # shell inside a runner container
-gha-runners build [--flavor F]          # rebuild the image
+gha-runners build [--flavor F] [--local] # pull the prebuilt image (--local: build here)
 gha-runners limits [--cpus N --memory MB]  # per-runner CPU/RAM caps
 gha-runners doctor                      # storage driver, disk, CPU throttling and OOM kills per runner
 gha-runners prune [--all]               # Docker cleanup (runs hourly; --all removes every unused image now)
 gha-runners migrate-storage             # switch Docker to the classic image store (images stored once)
-gha-runners update                      # pull latest scripts, rebuild, restart
+gha-runners update                      # pull latest scripts and image, restart
 ```
 
 Running the install one-liner *inside* an existing runner LXC also does an update.
@@ -344,6 +407,11 @@ checkout is copied into the container and nothing is cloned.
   unset before the runner starts. Jobs still have root on the LXC through the
   Docker socket, so give the PAT the narrowest scope you can. For organisations,
   use a fine-grained PAT with only **Self-hosted runners: write**.
+- The [caches](#caching) are shared by every job on the LXC, across repositories. A job
+  can put poisoned files (package caches, Git objects) into a cache that a later job of
+  another repository restores. The actions cache is scoped per repository, but jobs have
+  root on the LXC and could change its files too, just like they could change the runner
+  binaries for later jobs. Only attach repositories that trust each other.
 - If Docker can't start containers in the LXC (a known AppArmor issue on some PVE
   versions), the installer offers `lxc.apparmor.profile: unconfined`, but only
   after you confirm it.
@@ -377,12 +445,15 @@ install.sh                 Proxmox host wizard (pct create / push / exec)
 lxc/setup.sh               provisioning inside the LXC (Docker, CLI, registration)
 lxc/gha-runners            management CLI
 lxc/run-container.sh       docker run wrapper used by gha-runner@.service
-lxc/systemd/               runner template unit, hourly prune timer, disk guard
+lxc/systemd/               runner template unit, cache services, hourly prune timer, disk guard
 lxc/seccomp/io-uring.json  seccomp profile for full-plus runners (Docker default + io_uring)
 image/Dockerfile           runner image (FLAVOR=standard|full|full-plus)
 image/scripts/NN-*.sh      one build step per toolchain ("# flavors:" header)
 image/entrypoint.sh        ephemeral re-registration, env capture, run.sh
 image/hooks/               job-started / job-completed cleanup hooks
 image/tools/gha-cleanup    disk cleanup inside the runner (hooks, disk guard, jobs)
+image/tools/gha-patch-runner  keeps the runner on the local actions cache
+image/tools/gha-git-cache     keeps .git between jobs for fast checkouts
+.github/workflows/image.yml   publishes the prebuilt images to GHCR
 tests/                     unit + end-to-end tests (fake Proxmox) and LXC integration test
 ```

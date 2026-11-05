@@ -59,6 +59,22 @@ if [[ "${RUNNER_FLAVOR:-}" == full-plus && "${RUNNER_IO_URING:-1}" != 0 ]]; then
   else echo "warning: ${seccomp_profile} missing, io_uring stays blocked (run: gha-runners update)" >&2; fi
 fi
 
+# GHES issues job tokens the cache server doesn't verify, so only github.com
+# runners use the local actions cache.
+cache=()
+if [[ "$(sed -n 's/^GITHUB_URL=//p' "$env_file")" == https://github.com/* ]] \
+  && url="$(/usr/local/bin/gha-runners _cache_url)"; then
+  cache+=(-e "ACTIONS_RESULTS_URL=${url}")
+fi
+[[ "${GIT_CHECKOUT_CACHE:-1}" != 0 ]] || cache+=(-e GHA_GIT_CACHE=0)
+if [[ "${SHARED_PACKAGE_CACHE:-1}" != 0 ]]; then
+  pkg=/var/lib/gha-runners/package-cache home=/home/runner
+  install -d -o 1001 -g 1001 "$pkg" "$pkg/cache" "$pkg/npm"
+  cache+=(-v "$pkg/cache:$home/.cache" -v "$pkg/npm:$home/.npm"
+          -e "GOMODCACHE=$home/.cache/go-mod" -e "NUGET_PACKAGES=$home/.cache/nuget-packages"
+          -e "npm_config_store_dir=$home/.cache/pnpm-store" -e "BUN_INSTALL_CACHE_DIR=$home/.cache/bun")
+fi
+
 docker rm -f "gha-${name}" >/dev/null 2>&1 || true
 # A container Docker lost track of (e.g. on a full disk) can leave its
 # endpoint in the host network behind and block every new start.
@@ -102,6 +118,7 @@ if ! id="$(docker create --rm --init --pull never \
   "${limits[@]}" \
   "${parallel_env[@]}" \
   "${security[@]}" \
+  "${cache[@]}" \
   --env-file "$env_file" \
   "${token_env[@]}" \
   -v /var/run/docker.sock:/var/run/docker.sock \

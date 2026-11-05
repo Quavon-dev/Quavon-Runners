@@ -638,8 +638,8 @@ Continue anyway?" 0 || die "Choose a smaller size or fewer runners."
   # spinning disk or with little RAM the first build takes much longer.
   if [[ "$RUNNER_FLAVOR" == full* ]] && { host_only_hdd || (( $(host_ram_mb) < 8000 )); }; then
     w_yesno "This host has $(host_only_hdd && echo "only spinning disks (HDD)" || echo "only $(( $(host_ram_mb) / 1024 )) GB RAM").
-The first build of the '${RUNNER_FLAVOR}' image (~13-15 GB) can take 1-2 hours
-here and the host stays slow meanwhile. ZFS storage is much faster on HDDs
+The '${RUNNER_FLAVOR}' image (~13-15 GB) is downloaded prebuilt. Only if none matches
+these scripts it is built here, which can take 1-2 hours and slows the host. ZFS storage is much faster on HDDs
 than LVM. 'standard' (~3 GB) builds in minutes.
 
 Build '${RUNNER_FLAVOR}' anyway?" 1 || die "Re-run and choose the 'standard' image."
@@ -1207,7 +1207,7 @@ provision_ct() {   # provision_ct <index>
 build_image() {   # build_image <ctid>
   local id="$1" rc choice
   while true; do
-    msg_info "Building '${RUNNER_FLAVOR}' image (standard ~5-10 min, full ~20-40 min, full-plus ~30-50 min)" '.*### step '
+    msg_info "Building '${RUNNER_FLAVOR}' image (prebuilt download, else a local build: standard ~5-10 min, full ~20-40 min, full-plus ~30-50 min)" '(.*### step |Pulling )'
     rc=0
     run ct "$id" /usr/local/bin/gha-runners build --flavor "$RUNNER_FLAVOR" || rc=$?
     if [[ "$rc" == 0 ]]; then msg_ok "Built runner image quavon/gha-runner:${RUNNER_FLAVOR}"; return 0; fi

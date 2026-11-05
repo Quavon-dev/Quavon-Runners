@@ -61,6 +61,20 @@ chk "config written" 'grep -q "RUNNER_IMAGE=quavon/gha-runner:standard" /etc/gha
 chk "runner tarball downloaded + cached" 'ls /var/cache/gha-runners/actions-runner-linux-*.tar.gz >/dev/null 2>&1'
 echo "     --- registration output (tail) ---"; tail -8 /tmp/register.log | sed 's/^/     /'
 
+section "caches"
+bip="$(ip -4 -o addr show docker0 | awk '{ sub("/.*", "", $4); print $4 }')"
+cache_url="http://${bip}:29171"
+for _ in $(seq 1 60); do curl -fsS -o /dev/null "$cache_url/health" 2>/dev/null && break; sleep 1; done
+chk "actions cache answers on docker0" 'curl -fsS -o /dev/null "$cache_url/health"'
+chk "actions cache reachable from a bridge container" 'docker run --rm busybox wget -qO /dev/null "$cache_url/health"'
+chk "actions cache rejects requests without a job token" '[[ $(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d "{}" "$cache_url/twirp/github.actions.results.api.v1.CacheService/GetCacheEntryDownloadURL") == 401 ]]'
+chk "actions cache not on loopback" '! curl -fsS -o /dev/null --max-time 2 http://127.0.0.1:29171/health'
+chk "docker hub mirror configured" 'jq -e ".\"registry-mirrors\" == [\"http://127.0.0.1:29172\"]" /etc/docker/daemon.json >/dev/null'
+docker image rm busybox >/dev/null 2>&1; docker pull -q busybox >/dev/null 2>&1
+chk "docker pulls go through the mirror" '[[ -n "$(find /var/lib/gha-runners/mirror-cache -type f -name data | head -1)" ]]'
+chk "mirror not reachable from outside the LXC" '! ss -ltn | grep -q "0.0.0.0:29172"'
+docker stats --no-stream --format '     {{.Name}}: {{.MemUsage}}' gha-cache-actions gha-cache-mirror
+
 section "gha-runners build (real image build, standard)"
 start=$SECONDS
 gha-runners build --flavor standard >/tmp/build.log 2>&1; rc=$?
@@ -93,6 +107,8 @@ chk "docker socket mounted" 'grep -q "/var/run/docker.sock:/var/run/docker.sock"
 chk "runner dir at identical path" 'grep -q "\"$dir:$dir\"" <<<"$insp"'
 chk "cpu/memory caps applied" 'grep -q "\"NanoCpus\": 2000000000" <<<"$insp" && grep -q "\"Memory\": 2147483648" <<<"$insp"'
 chk "parallelism hints match the cpu cap" 'grep -q "\"GOMAXPROCS=2\"" <<<"$insp" && grep -q "\"PYTEST_XDIST_AUTO_NUM_WORKERS=2\"" <<<"$insp"'
+chk "runner points at the local actions cache" 'grep -q "\"ACTIONS_RESULTS_URL=$cache_url/\"" <<<"$insp"'
+chk "package caches mounted" 'grep -q "/var/lib/gha-runners/package-cache/cache:/home/runner/.cache" <<<"$insp" && grep -q "\"GOMODCACHE=/home/runner/.cache/go-mod\"" <<<"$insp"'
 chk "no PAT/token in container env" '! grep -qE "GITHUB_PAT|GHA_TOKEN" <<<"$insp"'
 docker exec "gha-$name" bash -lc 'id; docker version --format "docker-cli {{.Client.Version}} / daemon {{.Server.Version}}"; sudo -n true && echo sudo-ok' >/tmp/inrunner.log 2>&1
 chk "docker usable from runner container" 'grep -q "daemon" /tmp/inrunner.log'
@@ -101,6 +117,9 @@ chk "passwordless sudo in runner" 'grep -q sudo-ok /tmp/inrunner.log'
 docker exec "gha-$name" bash -c "mkdir -p $dir/_work/t && echo hello >$dir/_work/t/f && docker run --rm -v $dir/_work/t:/w busybox cat /w/f" >/tmp/samepath.log 2>&1
 chk "container jobs see runner workspace (same-path mount)" 'grep -qx hello /tmp/samepath.log'
 sleep 8
+chk "runner binary patched to keep the cache URL" 'LC_ALL=C grep -qaP "$(printf %s ACTIONS_RESULTS_ORL | sed "s/./&\\\\x00/g")" "$dir/bin/Runner.Worker.dll"'
+docker exec "gha-$name" bash -c 'touch ~/.cache/itest-pkg && pip download -q --no-deps -d /tmp/p six >/dev/null 2>&1; true'
+chk "package cache lands on the LXC" '[[ -e /var/lib/gha-runners/package-cache/cache/itest-pkg && $(stat -c %u /var/lib/gha-runners/package-cache/cache/itest-pkg) == 1001 ]]'
 journalctl -u "gha-runner@$name" --no-pager -n 80 >/tmp/runner-journal.log
 chk "env.sh captured image PATH for jobs" 'grep -q /opt/pipx_bin "$dir/.path"'
 chk "runner process actually launched (Runner.Listener)" 'grep -qiE "Runner|Listener|Connected|credentials|Error" /tmp/runner-journal.log'
@@ -116,6 +135,29 @@ chk "job-started hook hands root-owned files back" '[[ $(stat -c %u:%g "$dir/_wo
 chk "job-started hook removes containers left by earlier jobs" '! docker inspect itest-leftover >/dev/null 2>&1'
 chk "job-started hook keeps unrelated containers" 'docker inspect itest-unrelated >/dev/null 2>&1'
 docker rm -f itest-leftover itest-unrelated >/dev/null 2>&1
+
+section "git checkout cache"
+gitenv=(-e GITHUB_REPOSITORY=o/r -e GITHUB_WORKSPACE="$dir/_work/r/r" -e GITHUB_SERVER_URL="file://$dir/_work/_up")
+docker exec "gha-$name" bash -c "
+  set -e; git config --global user.email t@t; git config --global user.name t
+  git init -q --bare $dir/_work/_up/o/r && git init -q /tmp/src && cd /tmp/src && echo 1 >f && git add f && git commit -qm 1
+  git push -q file://$dir/_work/_up/o/r HEAD:main
+  mkdir -p $dir/_work/r/r && cd $dir/_work/r/r && git init -q && git remote add origin file://$dir/_work/_up/o/r
+  git fetch -q --depth=1 origin +main:refs/remotes/origin/main && git checkout -q -B main refs/remotes/origin/main
+  printf '#!/bin/sh\ntouch /tmp/hook-ran\n' >.git/hooks/post-checkout && chmod +x .git/hooks/post-checkout
+  git config core.hooksPath .git/hooks
+  cd /tmp/src && echo 2 >f && git commit -qam 2 && git push -q file://$dir/_work/_up/o/r HEAD:main" >/tmp/git.log 2>&1
+docker exec "${gitenv[@]}" "gha-$name" /opt/gha/hooks/job-completed.sh >>/tmp/git.log 2>&1
+chk "job-completed stores the repository's .git" '[[ -d $dir/_git/o/r.git/objects && ! -e $dir/_work/r/r/.git ]]'
+docker exec "${gitenv[@]}" "gha-$name" /opt/gha/hooks/job-started.sh >>/tmp/git.log 2>&1
+chk "job-started puts .git back into the clean workspace" '[[ -d $dir/_work/r/r/.git && ! -e $dir/_git/o/r.git ]]'
+docker exec "gha-$name" bash -c "cd $dir/_work/r/r && rm -f /tmp/hook-ran && [[ \$(git config --get remote.origin.url) == file://$dir/_work/_up/o/r ]] \
+  && ! git config --get core.hooksPath && git clean -ffdx -q && git reset -q --hard HEAD && [[ \$(cat f) == 1 ]] \
+  && git fetch --depth=1 origin +main:refs/remotes/origin/main 2>&1 && git checkout -q -B main refs/remotes/origin/main && [[ \$(cat f) == 2 ]] && [[ ! -e /tmp/hook-ran ]] && echo git-cache-ok" >>/tmp/git.log 2>&1
+chk "checkout reuses the restored .git, without old hooks or config" 'grep -q git-cache-ok /tmp/git.log' || tail -20 /tmp/git.log
+docker exec -e GHA_GIT_CACHE=0 "${gitenv[@]}" "gha-$name" /opt/gha/hooks/job-completed.sh >/dev/null 2>&1
+chk "GHA_GIT_CACHE=0 leaves .git alone" '[[ -d $dir/_work/r/r/.git && ! -e $dir/_git/o/r.git ]]'
+docker exec "gha-$name" sudo rm -rf "$dir/_work/r" "$dir/_work/_up" "$dir/_git"
 
 section "disk cleanup (gha-cleanup in the image)"
 docker exec "gha-$name" bash -c "mkdir -p $dir/_work/old-repo/old-repo $dir/_work/t/t ~/.cache/pip ~/.npm && touch $dir/_work/old-repo/old-repo/f ~/.cache/pip/f ~/.npm/f /tmp/job-junk"
@@ -151,6 +193,8 @@ chk "guard handles a full disk (rc=$rc)" '[[ $rc == 0 ]] && grep -q "disk full" 
 chk "full disk: reserve released" '[[ ! -e /var/lib/gha-runners/disk-reserve ]]'
 chk "full disk: unused images removed" '! docker image inspect busybox >/dev/null 2>&1'
 chk "full disk: leftover buildx builder and its cache removed" '! docker inspect buildx_buildkit_itest0 >/dev/null 2>&1 && ! docker volume inspect buildx_buildkit_itest0_state >/dev/null 2>&1'
+chk "full disk: caches dropped" '[[ ! -e /var/lib/gha-runners/package-cache/cache/itest-pkg ]]'
+chk "full disk: cache services back up" 'systemctl is-active --quiet gha-runners-cache@actions && systemctl is-active --quiet gha-runners-cache@mirror'
 chk "full disk: runner image kept" 'docker image inspect quavon/gha-runner:standard >/dev/null 2>&1'
 chk "full disk: idle runner cleaned without Docker too" '[[ ! -e $dir/_work/old-repo2 ]]'
 chk "full disk: idle runner cleaned by gha-cleanup" '[[ ! -e $dir/_work/old-repo ]] && grep -q "$name: gha-cleanup: freed" /tmp/guard.log'

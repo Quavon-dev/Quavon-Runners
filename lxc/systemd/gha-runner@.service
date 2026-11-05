@@ -1,7 +1,7 @@
 [Unit]
 Description=GitHub Actions runner %i (Docker)
 Documentation=https://docs.github.com/actions/hosting-your-own-runners
-After=docker.service network-online.target
+After=docker.service network-online.target gha-runners-cache@actions.service
 Wants=network-online.target
 Requires=docker.service
 StartLimitIntervalSec=0

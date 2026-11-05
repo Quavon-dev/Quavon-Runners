@@ -1,0 +1,53 @@
+name: image
+
+on:
+  push:
+    branches: [main]
+    paths: [image/**, .github/workflows/image.yml]
+  schedule:
+    - cron: '23 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [standard, full, full-plus]
+    env:
+      FLAVOR: ${{ matrix.flavor }}
+      IMAGE: ghcr.io/${{ github.repository_owner }}/gha-runner
+      SOURCE: ${{ github.server_url }}/${{ github.repository }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache
+          docker system prune --all --force
+          df -h /
+
+      - name: Build
+        run: |
+          tree="$(git rev-parse HEAD:image)"
+          docker build --pull --progress=plain --build-arg FLAVOR="$FLAVOR" \
+            --label org.opencontainers.image.source="$SOURCE" \
+            --label org.opencontainers.image.revision="$GITHUB_SHA" \
+            -t "${IMAGE}:${FLAVOR}-${tree}" -t "${IMAGE}:${FLAVOR}" image
+
+      - name: Push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin <<<"$GH_TOKEN"
+          docker push --all-tags "$IMAGE"

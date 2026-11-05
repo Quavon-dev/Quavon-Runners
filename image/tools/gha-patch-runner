@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# gha-patch-runner - keep ACTIONS_RESULTS_URL pointed at the LXC's local cache.
+#
+# The runner overwrites ACTIONS_RESULTS_URL with GitHub's results service at
+# every job. Renaming that UTF-16 string in Runner.Worker.dll makes it write
+# ACTIONS_RESULTS_ORL instead, so the value from the container stays. A runner
+# self-update restores the stock binary; the job-completed hook patches again.
+set -uo pipefail
+
+[[ -n "${ACTIONS_RESULTS_URL:-}" && -n "${RUNNER_DIR:-}" ]] || exit 0
+dll="${RUNNER_DIR}/bin/Runner.Worker.dll"
+[[ -f "$dll" ]] || exit 0
+# shellcheck disable=SC2001
+utf16() { sed 's/./&\\x00/g' <<<"$1"; }
+LC_ALL=C sed -i --follow-symlinks "s/$(utf16 ACTIONS_RESULTS_URL)/$(utf16 ACTIONS_RESULTS_ORL)/g" "$dll"

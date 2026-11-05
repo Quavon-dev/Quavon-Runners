@@ -23,6 +23,13 @@ RESERVE_MIN_MB=512
 RESERVE_MAX_MB=10240
 DISK_FULL_FREE_MB=1024
 GUARD_INTERVAL=15
+STATE_DIR=/var/lib/gha-runners
+PACKAGE_CACHE_DIR="${STATE_DIR}/package-cache"
+CACHE_SERVICES="actions mirror"
+ACTIONS_CACHE_IMAGE=ghcr.io/falcondev-oss/github-actions-cache-server:10.0.0@sha256:05c4d9e7169f525f2b74d412c4a081aeec5446a017ec88bae668e63ebfb16aa9
+ACTIONS_CACHE_PORT=29171
+DOCKER_MIRROR_IMAGE=registry:3.1.2@sha256:d4032d4cc323c1731c707931ecada07a53076eac38e3b61ae57533f170f2c6c3
+DOCKER_MIRROR_PORT=29172
 
 c_ok=$'\e[32m' c_err=$'\e[31m' c_dim=$'\e[2m' c_off=$'\e[0m'
 info() { printf '%s\n' "$*"; }
@@ -326,21 +333,40 @@ cmd_shell() {
   docker exec -it "gha-$1" bash -l
 }
 
+image_gb() { case "$1" in full) echo 13 ;; full-plus) echo 15 ;; *) echo 3 ;; esac; }
+
+# Prebuilt images are tagged with the git tree hash of image/, so only an
+# image built from exactly these scripts is pulled.
+pull_image() {   # pull_image <flavor> <local tag>
+  local registry="${PREBUILT_IMAGE-ghcr.io/quavon-dev/gha-runner}" tree remote
+  [[ -n "$registry" ]] || return 1
+  tree="$(git -c safe.directory="$REPO_DIR" -C "$REPO_DIR" rev-parse HEAD:image 2>/dev/null)" || return 1
+  [[ -z "$(git -c safe.directory="$REPO_DIR" -C "$REPO_DIR" status --porcelain -- image 2>/dev/null)" ]] || { info "image/ has local changes: building locally"; return 1; }
+  remote="${registry}:$1-${tree}"
+  info "Pulling prebuilt ${remote}"
+  docker pull "$remote" || { info "no prebuilt image for these scripts: building locally"; return 1; }
+  docker tag "$remote" "$2"
+  docker image rm "$remote" >/dev/null
+}
+
 cmd_build() {
   require_root; load_config
-  local flavor="$RUNNER_FLAVOR" no_cache=()
+  local flavor="$RUNNER_FLAVOR" no_cache=() local_only=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --flavor) flavor="$2"; shift 2 ;;
-      --no-cache) no_cache=(--no-cache); shift ;;
+      --no-cache) no_cache=(--no-cache); local_only=1; shift ;;
+      --local) local_only=1; shift ;;
       *) die "unknown option $1" ;;
     esac
   done
   [[ "$flavor" =~ ^(standard|full|full-plus)$ ]] || die "flavor must be 'standard', 'full' or 'full-plus'"
   local image="quavon/gha-runner:${flavor}"
-  info "Building ${image} - 'standard' takes ~5-10 min, 'full' ~20-40 min, 'full-plus' ~30-50 min"
-  DOCKER_BUILDKIT=1 docker build "${no_cache[@]}" --pull --progress=plain \
-    --build-arg FLAVOR="$flavor" -t "$image" "${REPO_DIR}/image"
+  if [[ "$local_only" == 1 ]] || ! pull_image "$flavor" "$image"; then
+    info "Building ${image} - 'standard' takes ~5-10 min, 'full' ~20-40 min, 'full-plus' ~30-50 min"
+    DOCKER_BUILDKIT=1 docker build "${no_cache[@]}" --pull --progress=plain \
+      --build-arg FLAVOR="$flavor" -t "$image" "${REPO_DIR}/image"
+  fi
   sed -i -e "s|^RUNNER_FLAVOR=.*|RUNNER_FLAVOR=${flavor}|" -e "s|^RUNNER_IMAGE=.*|RUNNER_IMAGE=${image}|" \
     "${CONF_DIR}/config.env"
   RUNNER_FLAVOR="$flavor" RUNNER_IMAGE="$image"
@@ -473,7 +499,32 @@ remove_stale_builders() {
   docker volume ls -q --filter dangling=true --filter name=buildx_buildkit_ | xargs -r docker volume rm >/dev/null 2>&1 || true
 }
 
+cache_enabled() {
+  case "$1" in
+    actions) [[ "${LOCAL_ACTIONS_CACHE:-1}" != 0 ]] ;;
+    mirror) [[ "${DOCKER_HUB_MIRROR:-1}" != 0 ]] ;;
+    *) return 1 ;;
+  esac
+}
+
+bridge_ip() { ip -4 -o addr show docker0 2>/dev/null | awk '{ sub("/.*", "", $4); print $4; exit }'; }
+
+# Every cache refills itself, so a nearly full disk drops them all. The cache
+# services restart at once, before the image prune could remove their images.
+clear_caches() {
+  local svc
+  for svc in $CACHE_SERVICES; do
+    [[ -d "${STATE_DIR}/${svc}-cache" ]] || continue
+    systemctl stop "gha-runners-cache@${svc}.service" 2>/dev/null || true
+    rm -rf --one-file-system "${STATE_DIR:?}/${svc}-cache"
+    if cache_enabled "$svc"; then systemctl start "gha-runners-cache@${svc}.service" 2>/dev/null || true; fi
+  done
+  find "$PACKAGE_CACHE_DIR" -mindepth 2 -maxdepth 2 -exec rm -rf --one-file-system {} + 2>/dev/null || true
+  rm -rf --one-file-system "$RUNNERS_ROOT"/*/_git
+}
+
 prune_unused() {   # prune_unused [builder age in hours]
+  clear_caches
   remove_stale_builders "${1:-6}"
   docker container prune --force
   docker image prune --all --force --filter "label!=${IMAGE_LABEL}"
@@ -587,6 +638,21 @@ doctor_runners() {
   (( oom == 0 )) || warn "jobs ran out of memory: raise the cap (gha-runners limits --memory MB) or use fewer workers"
 }
 
+doctor_caches() {
+  local svc state
+  for svc in $CACHE_SERVICES; do
+    if ! cache_enabled "$svc"; then printf '%-15s: off\n' "${svc} cache"; continue; fi
+    state="$(systemctl is-active "gha-runners-cache@${svc}.service" 2>/dev/null || true)"
+    printf '%-15s: %s, %s\n' "${svc} cache" "$state" "$(du -sh "${STATE_DIR}/${svc}-cache" 2>/dev/null | cut -f1)"
+    [[ "$state" == active ]] || warn "${svc} cache not running: journalctl -u gha-runners-cache@${svc}"
+  done
+  if [[ "${SHARED_PACKAGE_CACHE:-1}" != 0 ]]; then
+    printf '%-15s: %s\n' "package cache" "$(du -sh "$PACKAGE_CACHE_DIR" 2>/dev/null | cut -f1)"
+  else
+    printf '%-15s: off\n' "package cache"
+  fi
+}
+
 cmd_doctor() {
   require_root; load_config
   local driver used
@@ -602,6 +668,7 @@ cmd_doctor() {
   (( $(reserve_target_mb) == 0 || $(reserve_mb) > 0 )) || warn "disk reserve released: the disk was full recently"
   systemctl is-active --quiet gha-runners-diskguard.service || warn "disk guard not running: systemctl enable --now gha-runners-diskguard"
   (( used < PRUNE_AT_PERCENT )) || warn "disk nearly full: gha-runners prune --all"
+  doctor_caches
   printf 'LXC stalled    : cpu %s, memory %s, io %s of the last minute\n' "$(pressure cpu)" "$(pressure memory)" "$(pressure io)"
   doctor_runners
   printf '\nOther containers (job services and leftovers):\n'
@@ -616,6 +683,66 @@ cmd_regtoken() {
   require_runner "$name"
   pat="$(cat "$(pat_file "$name")" 2>/dev/null)" || die "no PAT stored for '$name'"
   pat_token "$(env_get "$name" GITHUB_URL)" "$pat" registration
+}
+
+# Internal: runs one local cache in the foreground for gha-runners-cache@.service.
+# The actions cache uses the host network on the docker0 address, so runners,
+# job containers and buildx builders all reach it.
+cmd_cache() {
+  require_root
+  # shellcheck source=/dev/null
+  [[ -f "${CONF_DIR}/config.env" ]] && source "${CONF_DIR}/config.env"
+  local svc="${1:-}" dir="${STATE_DIR}/${1:-}-cache" name="gha-cache-${1:-}" ip
+  local hardening=(--rm --name "$name" --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges --memory 256m)
+  docker rm -f "$name" >/dev/null 2>&1 || true
+  case "$svc" in
+    actions)
+      ip="$(bridge_ip)"
+      [[ -n "$ip" ]] || die "docker0 has no IPv4 address"
+      install -d -o 65532 -g 65532 "$dir"
+      exec docker run "${hardening[@]}" --network host --user 65532:65532 \
+        -e HOST="$ip" -e PORT="$ACTIONS_CACHE_PORT" -e API_BASE_URL="http://${ip}:${ACTIONS_CACHE_PORT}" \
+        -e STORAGE_FILESYSTEM_PATH=/data/blobs -e DB_SQLITE_PATH=/data/cache.db \
+        -e CACHE_MAX_SIZE_BYTES="$(( $(disk_size_mb) * 1048576 / 5 ))" \
+        -e CACHE_FILESYSTEM_MAX_USAGE_PERCENT=70 -e CACHE_CLEANUP_OLDER_THAN_DAYS=14 \
+        -v "${dir}:/data" "$ACTIONS_CACHE_IMAGE" ;;
+    mirror)
+      install -d "$dir"
+      exec docker run "${hardening[@]}" -p "127.0.0.1:${DOCKER_MIRROR_PORT}:5000" \
+        -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io -e REGISTRY_PROXY_TTL=168h -e REGISTRY_LOG_LEVEL=warn \
+        -v "${dir}:/var/lib/registry" "$DOCKER_MIRROR_IMAGE" ;;
+    *) die "usage: gha-runners _cache actions|mirror" ;;
+  esac
+}
+
+# Internal: enables the cache services switched on in config.env, stops the others.
+cmd_caches() {
+  require_root
+  # shellcheck source=/dev/null
+  [[ -f "${CONF_DIR}/config.env" ]] && source "${CONF_DIR}/config.env"
+  local svc
+  for svc in $CACHE_SERVICES; do
+    if cache_enabled "$svc"; then
+      systemctl enable "gha-runners-cache@${svc}.service" >/dev/null 2>&1
+      systemctl restart "gha-runners-cache@${svc}.service"
+    else
+      systemctl disable --now "gha-runners-cache@${svc}.service" >/dev/null 2>&1 || true
+    fi
+  done
+}
+
+# Internal: prints the actions cache URL for run-container.sh once it answers.
+cmd_cache_url() {
+  # shellcheck source=/dev/null
+  [[ -f "${CONF_DIR}/config.env" ]] && source "${CONF_DIR}/config.env"
+  cache_enabled actions || return 1
+  local url _
+  for _ in $(seq 1 20); do
+    url="http://$(bridge_ip):${ACTIONS_CACHE_PORT}/"
+    curl -fsS --max-time 2 -o /dev/null "${url}health" 2>/dev/null && { echo "$url"; return 0; }
+    sleep 1
+  done
+  return 1
 }
 
 cmd_update() {
@@ -641,6 +768,11 @@ cmd_update_image() {
     cmd_migrate_storage --yes
     return
   fi
+  if (( $(disk_free_mb) < ($(image_gb "$RUNNER_FLAVOR") + 2) * 1024 )); then
+    info "No room for a second image next to the current one: runners stop until the new one is ready"
+    cmd_service stop all
+    docker image rm "$RUNNER_IMAGE" >/dev/null 2>&1 || true
+  fi
   cmd_build
   cmd_service restart all
 }
@@ -655,12 +787,13 @@ gha-runners - Dockerized GitHub Actions runners
   start|stop|restart [name]  control one runner (default: all)
   logs <name> [-f]           runner logs (journald)
   shell <name>               open a shell inside a runner container
-  build [--flavor F] [--no-cache]  (re)build the runner image (standard|full|full-plus)
+  build [--flavor F] [--local] [--no-cache]  get the runner image (standard|full|full-plus):
+                             prebuilt from GHCR, or built here (--local, --no-cache)
   limits [--cpus N] [--memory MB]  show/change per-runner CPU/RAM caps
   doctor                     find what slows the runners down
   prune [--all]              clean up Docker (hourly; --all: every unused image now)
   migrate-storage            switch Docker to the classic image store (images stored once)
-  update                     pull latest scripts, rebuild image, restart all
+  update                     pull latest scripts and image, restart all
 EOF
 }
 
@@ -682,6 +815,9 @@ main() {
     _update_image) cmd_update_image ;;
     _diskguard) cmd_diskguard "$@" ;;
     _regtoken) cmd_regtoken "$@" ;;
+    _cache) cmd_cache "$@" ;;
+    _caches) cmd_caches ;;
+    _cache_url) cmd_cache_url ;;
     help|-h|--help) usage ;;
     *) usage; exit 1 ;;
   esac

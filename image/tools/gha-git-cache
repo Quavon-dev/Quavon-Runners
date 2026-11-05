@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# gha-git-cache - keep a repository's .git between jobs, so actions/checkout
+# reuses it and fetches only the new commits.
+#
+#   gha-git-cache save     job-completed: move the workspace's .git to the store
+#   gha-git-cache restore  job-started: move it back into the empty workspace
+#
+# A restore keeps only objects, refs and HEAD and writes a fresh config, so
+# hooks, config, submodules and alternates left by earlier jobs never run.
+set -uo pipefail
+
+[[ "${GHA_GIT_CACHE:-1}" != 0 && -n "${RUNNER_DIR:-}" && "${GITHUB_REPOSITORY:-}" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || exit 0
+work="${RUNNER_DIR}/_work"
+repo="${GITHUB_REPOSITORY#*/}"
+ws="${GITHUB_WORKSPACE:-${work}/${repo}/${repo}}"
+ws="${ws%/}"
+[[ "$ws" == "$work"/*/* ]] || exit 0
+store="${RUNNER_DIR}/_git/${GITHUB_REPOSITORY}.git"
+url="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}"
+
+case "${1:-}" in
+  save)
+    [[ -d "$ws/.git/objects" ]] || exit 0
+    [[ "$(git -c safe.directory="$ws" -C "$ws" config --local --get remote.origin.url 2>/dev/null)" == "$url" ]] || exit 0
+    sudo rm -rf --one-file-system "$store"
+    mkdir -p "${store%/*}"
+    sudo mv "$ws/.git" "$store"
+    ;;
+  restore)
+    [[ -d "$store/objects" && ! -e "$ws/.git" ]] || exit 0
+    sudo find "$store" ! -user runner -exec chown -h runner:runner {} + 2>/dev/null
+    find "$store" -mindepth 1 -maxdepth 1 ! -name objects ! -name refs ! -name packed-refs ! -name HEAD ! -name shallow \
+      -exec rm -rf --one-file-system {} +
+    rm -f "$store/objects/info/alternates" "$store/objects/info/http-alternates"
+    mkdir -p "$ws"
+    mv "$store" "$ws/.git"
+    if ! { git -C "$ws" init -q && git -C "$ws" remote add origin "$url"; }; then
+      rm -rf --one-file-system "$ws/.git"
+    fi
+    ;;
+  *) echo "usage: gha-git-cache save|restore" >&2; exit 2 ;;
+esac
+exit 0

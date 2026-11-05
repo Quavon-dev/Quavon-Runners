@@ -42,5 +42,6 @@ unset RUNNER_TOKEN
 # Re-capture PATH and toolchain vars from *this* image for job steps.
 rm -f .env .path
 ./env.sh >/dev/null
+/usr/local/bin/gha-patch-runner
 
 exec ./run.sh

@@ -27,14 +27,14 @@ keep=""
 /usr/local/bin/gha-cleanup --keep "$keep"
 exec 9>&-
 
-[[ "${RUNNER_EPHEMERAL:-0}" == 1 ]] && exit 0
-[[ -d "$work" ]] || exit 0
+if [[ "${RUNNER_EPHEMERAL:-0}" != 1 && -d "$work" ]]; then
+  # Container jobs write files as root; fix ownership so checkout never fails.
+  sudo find "$work" \( ! -user runner -o ! -group runner \) -exec chown -h runner:runner {} + 2>/dev/null || true
 
-# Container jobs write files as root; fix ownership so checkout never fails.
-sudo find "$work" \( ! -user runner -o ! -group runner \) -exec chown -h runner:runner {} + 2>/dev/null || true
-
-if [[ -n "$workspace" && -d "$workspace" && "$workspace" == "$work"/* ]]; then
-  echo "Cleaning workspace ${workspace}"
-  sudo find "$workspace" -mindepth 1 -delete 2>/dev/null || true
+  if [[ -n "$workspace" && -d "$workspace" && "$workspace" == "$work"/* ]]; then
+    echo "Cleaning workspace ${workspace}"
+    sudo find "$workspace" -mindepth 1 -delete 2>/dev/null || true
+  fi
 fi
+/usr/local/bin/gha-git-cache restore
 exit 0

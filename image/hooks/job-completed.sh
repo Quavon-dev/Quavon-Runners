@@ -4,6 +4,8 @@ set -uo pipefail
 
 [[ -n "${RUNNER_DIR:-}" ]] || exit 0
 rm -f "${RUNNER_DIR}/.gha-job-running"
+/usr/local/bin/gha-patch-runner
+/usr/local/bin/gha-git-cache save
 
 [[ "${RUNNER_EPHEMERAL:-0}" == 1 ]] && exit 0
 [[ -d "${RUNNER_DIR}/_work" ]] \

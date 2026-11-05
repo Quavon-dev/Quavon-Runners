@@ -84,6 +84,39 @@ t "reserve maximum"    "$(reserve_target_mb)" "10240"
 t "reserve off"        "$(DISK_RESERVE_PERCENT=0 reserve_target_mb)" "0"
 t "reserve bad value"  "$(DISK_RESERVE_PERCENT=abc reserve_target_mb)" "0"
 unset -f disk_size_mb
+ok() { if eval "$2"; then pass=$((pass + 1)); else echo "FAIL $1"; fail=1; fi; }
+
+t "image size full-plus" "$(image_gb full-plus)" "15"
+t "image size standard"  "$(image_gb standard)" "3"
+ok "actions cache on by default" 'cache_enabled actions && cache_enabled mirror'
+ok "caches switch off"   '! LOCAL_ACTIONS_CACHE=0 cache_enabled actions && ! DOCKER_HUB_MIRROR=0 cache_enabled mirror'
+
+# prebuilt image: only for a clean image/ tree of a git checkout
+repo="$(mktemp -d)"; mkdir -p "$repo/image"; echo a >"$repo/image/f"
+git -C "$repo" init -q && git -C "$repo" add . && git -C "$repo" -c user.email=t@t -c user.name=t commit -qm i
+docker() { echo "docker $*" >>/tmp/docker-calls; }
+info() { :; }
+: >/tmp/docker-calls
+REPO_DIR="$repo" pull_image full quavon/gha-runner:full
+ok "prebuilt pulled by tree hash" 'grep -qx "docker pull ghcr.io/quavon-dev/gha-runner:full-$(git -C "$repo" rev-parse HEAD:image)" /tmp/docker-calls'
+ok "prebuilt retagged locally" 'grep -q "docker tag ghcr.io/quavon-dev/gha-runner:full-.* quavon/gha-runner:full" /tmp/docker-calls'
+echo b >"$repo/image/f"; : >/tmp/docker-calls
+ok "local changes build locally" '! REPO_DIR="$repo" pull_image full quavon/gha-runner:full && [[ ! -s /tmp/docker-calls ]]'
+ok "PREBUILT_IMAGE= turns pulling off" '! PREBUILT_IMAGE= REPO_DIR="$repo" pull_image full x'
+ok "no git checkout builds locally" '! REPO_DIR=/tmp pull_image full x'
+unset -f docker info
+rm -rf "$repo"
+
+# runner patch: ACTIONS_RESULTS_URL (UTF-16) renamed so the runner keeps ours
+dir="$(mktemp -d)"; mkdir -p "$dir/bin"
+printf 'xx\x00A\x00C\x00T\x00I\x00O\x00N\x00S\x00_\x00R\x00E\x00S\x00U\x00L\x00T\x00S\x00_\x00U\x00R\x00L\x00yy' >"$dir/bin/Runner.Worker.dll"
+utf16() { printf %s "$1" | sed 's/./&\\x00/g'; }
+RUNNER_DIR="$dir" bash "$ROOT/image/tools/gha-patch-runner"
+ok "runner patch without cache URL: untouched" 'LC_ALL=C grep -qaP "$(utf16 ACTIONS_RESULTS_URL)" "$dir/bin/Runner.Worker.dll"'
+RUNNER_DIR="$dir" ACTIONS_RESULTS_URL=http://172.17.0.1:29171/ bash "$ROOT/image/tools/gha-patch-runner"
+ok "runner patch renames the variable" 'LC_ALL=C grep -qaP "$(utf16 ACTIONS_RESULTS_ORL)" "$dir/bin/Runner.Worker.dll" && ! LC_ALL=C grep -qaP "$(utf16 ACTIONS_RESULTS_URL)" "$dir/bin/Runner.Worker.dll"'
+t "runner patch keeps the size" "$(stat -c %s "$dir/bin/Runner.Worker.dll")" "43"
+rm -rf "$dir"
 
 echo "unit: ${pass} passed$([[ $fail == 1 ]] && echo ', FAILURES above')"
 exit "$fail"

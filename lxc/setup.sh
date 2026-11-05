@@ -15,6 +15,7 @@ export LANG=C.UTF-8 LC_ALL=C.UTF-8 LANGUAGE=
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CONF_DIR=/etc/gha-runners
 LIB_DIR=/usr/local/lib/gha-runners
+DOCKER_MIRROR_URL=http://127.0.0.1:29172
 export DEBIAN_FRONTEND=noninteractive
 
 log() { printf '\n\e[36m==>\e[0m %s\n' "$*"; }
@@ -53,17 +54,22 @@ container on LVM-thin or directory storage." ;;
   echo "Docker OK - storage driver: ${driver}"
 }
 
+# Returns 0 when daemon.json changed and Docker needs a restart.
 configure_daemon() {
-  local file=/etc/docker/daemon.json cache_cap_gb
+  local file=/etc/docker/daemon.json cache_cap_gb mirror=off new
   install -d /etc/docker
   # Classic image store: the containerd store (Docker 29+ default) keeps
   # every image twice. Existing installs switch with: gha-runners migrate-storage
   [[ -f "$file" ]] || echo '{ "log-driver": "json-file", "log-opts": { "max-size": "20m", "max-file": "3" },
   "features": { "containerd-snapshotter": false } }' >"$file"
-  jq -e '.builder.gc' "$file" >/dev/null && return 1
   cache_cap_gb="$(df -BG --output=size / | awk 'NR == 2 { v = int($1 / 4); print (v < 2 ? 2 : v) }')"
-  jq --arg cap "${cache_cap_gb}GB" '.builder.gc = { enabled: true, defaultMaxUsedSpace: $cap }' "$file" >"${file}.new" \
-    && mv "${file}.new" "$file"
+  [[ "$(sed -n 's/^DOCKER_HUB_MIRROR=//p' "${CONF_DIR}/config.env" 2>/dev/null)" == 0 ]] || mirror=on
+  new="$(jq --arg cap "${cache_cap_gb}GB" --arg url "$DOCKER_MIRROR_URL" --arg mirror "$mirror" '
+    .builder.gc //= { enabled: true, defaultMaxUsedSpace: $cap }
+    | .["registry-mirrors"] = ((.["registry-mirrors"] // []) - [$url] + (if $mirror == "on" then [$url] else [] end))
+    | if .["registry-mirrors"] == [] then del(.["registry-mirrors"]) else . end' "$file")"
+  [[ "$new" != "$(jq . "$file")" ]] || return 1
+  printf '%s\n' "$new" >"$file"
 }
 
 setup_files() {
@@ -78,6 +84,7 @@ setup_files() {
   systemctl enable gha-runners-diskguard.service >/dev/null
   systemctl restart gha-runners-diskguard.service   # picks up an updated gha-runners
   if configure_daemon; then systemctl restart docker; fi
+  /usr/local/bin/gha-runners _caches
 }
 
 ensure_runner_user() {
