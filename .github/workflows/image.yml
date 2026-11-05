@@ -26,7 +26,7 @@ jobs:
         flavor: [standard, full, full-plus]
     env:
       FLAVOR: ${{ matrix.flavor }}
-      IMAGE: ghcr.io/${{ github.repository_owner }}/gha-runner
+      OWNER: ${{ github.repository_owner }}
       SOURCE: ${{ github.server_url }}/${{ github.repository }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -39,6 +39,8 @@ jobs:
 
       - name: Build
         run: |
+          IMAGE="ghcr.io/${OWNER,,}/gha-runner"
+          echo "IMAGE=${IMAGE}" >>"$GITHUB_ENV"
           tree="$(git rev-parse HEAD:image)"
           docker build --pull --progress=plain --build-arg FLAVOR="$FLAVOR" \
             --label org.opencontainers.image.source="$SOURCE" \
