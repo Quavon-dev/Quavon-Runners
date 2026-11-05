@@ -29,11 +29,12 @@ ENV DEBIAN_FRONTEND=noninteractive \
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Bootstrap only what the step runner needs; 00-base installs the rest.
-# Retry downloads: mirrors and PPAs answer 503 now and then.
+# Retry downloads: mirrors, PPAs and GitHub answer 503/504 now and then.
 # dpkg without fsync: on LVM over a spinning disk every package would wait for
 # the platter. Safe here - a build that dies mid-way just rebuilds the layer.
 RUN printf 'Acquire::Retries "5";\nAcquire::http::Timeout "60";\nAcquire::https::Timeout "60";\n' \
       >/etc/apt/apt.conf.d/80-retries \
+ && printf 'retry = 5\nretry-all-errors\nretry-delay = 5\n' >/root/.curlrc \
  && echo force-unsafe-io >/etc/dpkg/dpkg.cfg.d/80-unsafe-io \
  && apt-get update -qq \
  && apt-get install -y --no-install-recommends ca-certificates curl gnupg sudo \

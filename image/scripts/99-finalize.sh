@@ -9,5 +9,6 @@ add_env ImageVersion "$(date -u +%Y%m%d).quavon"
 add_env XDG_CONFIG_HOME /home/runner/.config
 chown -R runner:runner /home/runner /opt/hostedtoolcache
 apt-get clean
+rm -f /root/.curlrc
 echo "--- /etc/gha/env.sh ---"
 cat "$GHA_ENV_FILE"
