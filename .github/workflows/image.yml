@@ -52,4 +52,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin <<<"$GH_TOKEN"
-          docker push --all-tags "$IMAGE"
+          for attempt in 1 2 3; do
+            docker push --all-tags "$IMAGE" && exit 0
+            echo "push failed (attempt ${attempt}), retrying"
+            sleep $((attempt * 20))
+          done
+          exit 1
