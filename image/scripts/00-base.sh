@@ -4,6 +4,10 @@
 # layer of GitHub's ubuntu-24.04 hosted image.
 source "$(dirname "$0")/lib.sh"
 
+log "Security updates"
+apt-get update -qq
+apt-get -y upgrade
+
 log "Base packages"
 apt_install \
   acl aria2 apt-transport-https autoconf automake bc binutils bison brotli \

@@ -70,6 +70,7 @@ fi
 # Git caches live there too; jobs must not wipe them for a full local disk.
 cache_root=/var/lib/gha-runners shared=/var/lib/gha-runners/shared
 mountpoint -q "$shared" && cache_root="$shared"
+[[ "${SHARED_DOCKER:-0}" == 1 ]] && cache+=(-e GHA_SHARED_DOCKER=1)
 if [[ "${GIT_CHECKOUT_CACHE:-1}" == 0 ]]; then
   cache+=(-e GHA_GIT_CACHE=0)
 elif [[ "$cache_root" == "$shared" ]]; then

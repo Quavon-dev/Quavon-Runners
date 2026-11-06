@@ -140,7 +140,7 @@ ${BL}
  | |  _| | __| |_| | | | | '_ \\  | |_) | | | | '_ \\| '_ \\ / _ \\ '__/ __|
  | |_| | | |_|  _  | |_| | |_) | |  _ <| |_| | | | | | | |  __/ |  \\__ \\
   \\____|_|\\__|_| |_|\\__,_|_.__/  |_| \\_\\\\__,_|_| |_|_| |_|\\___|_|  |___/
-${CL}${DIM}  Docker-based GitHub Actions runners in a Proxmox LXC - by Quavon${CL}
+${CL}${DIM}  Docker-based GitHub Actions runners for Proxmox VE and Linux - by Quavon${CL}
 
 EOF
 }
@@ -487,7 +487,7 @@ ct_count()       { [[ "$LAYOUT" == separate ]] && echo "$RUNNER_COUNT" || echo 1
 
 ask_size() {
   SIZE="$(w_menu "Resources PER RUNNER (each runner is capped at this)
-${RUNNER_COUNT} runner(s) in $(ct_count) container(s). Host: $(host_cpus) CPUs, $(( $(host_ram_mb) / 1024 )) GB RAM" "${SIZE:-medium}" \
+${RUNNER_COUNT} runner(s) $([[ "$CTID" == local ]] && echo "on this machine" || echo "in $(ct_count) container(s)"). Host: $(host_cpus) CPUs, $(( $(host_ram_mb) / 1024 )) GB RAM" "${SIZE:-medium}" \
     small  "1 CPU,  2 GB RAM  - lint, unit tests, small builds" \
     medium "2 CPU,  4 GB RAM  - typical web/app builds (recommended)" \
     large  "4 CPU,  8 GB RAM  - Docker image builds, big test suites" \

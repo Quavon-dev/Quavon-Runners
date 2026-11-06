@@ -516,3 +516,13 @@ image/tools/gha-git-cache     keeps .git between jobs for fast checkouts
 docs/install-linux.md      install without Proxmox (any Debian/Ubuntu machine)
 tests/                     unit + end-to-end tests (fake Proxmox) and LXC integration test
 ```
+
+## License
+
+[AGPL-3.0](LICENSE). If you run a modified version of this project as a service for
+others, you must publish your changes under the same license.
+
+The runner images bundle third-party software (Ubuntu packages, language toolchains,
+browsers, cloud CLIs, the GitHub Actions runner) under their own licenses. The cache
+server ([github-actions-cache-server](https://github.com/falcondev-oss/github-actions-cache-server),
+MIT) and the Docker Hub mirror (`registry`, Apache-2.0) run as their unmodified upstream images.
