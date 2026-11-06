@@ -96,7 +96,7 @@ in_ct "$A" "echo 1 >/shared/budget-gb && fallocate -l 900M $SH/package-cache/cac
 in_ct "$B" "gha-runners prune" >/tmp/prune-b.log 2>&1
 chk "over 80% of the budget the package and Git caches are cleared" 'in_ct "$A" "! test -e $SH/package-cache/cache/big && ! test -e $SH/git/o"'
 chk "the mirrors are only cleared by the LXC serving them" 'in_ct "$A" "find $SH/mirror-cache $SH/ghcr-cache -type f -name data | grep -q ."'
-chk "B clears the apt cache it serves and serves it again" 'in_ct "$A" "! test -e $SH/apt-cache/itest-marker" && wait_for 30 "serves $B apt"'
+chk "B clears the apt cache it serves, then one LXC serves it again" 'in_ct "$A" "! test -e $SH/apt-cache/itest-marker" && wait_for 30 "serves $A apt || serves $B apt"'
 chk "B keeps the cache server images for a takeover" 'in_ct "$B" "docker image inspect gha-runners/cache-actions:pinned gha-runners/cache-mirror:pinned gha-runners/cache-apt:pinned gha-runners/cache-ghcr:pinned >/dev/null"'
 chk "the actions cache stays" 'in_ct "$A" "test -e $SH/actions-cache/cache.db"'
 
