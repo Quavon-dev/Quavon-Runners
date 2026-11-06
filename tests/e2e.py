@@ -579,6 +579,20 @@ def case_host_update_stops_at_failure():
     check(rc != 0 and "CT 999 does not exist" in out, "unknown CT must be refused")
 
 
+def case_host_mode_refuses_proxmox():
+    reset_host()
+    rc, out = host_command("host", NONINTERACTIVE=1, GH_URL="https://github.com/quavon-dev/app", GH_TOKEN=TOKEN)
+    check(rc != 0 and "This is a Proxmox VE host" in out, f"host mode must refuse Proxmox\n{out[-1500:]}")
+    check(calls() == "", "nothing may run on the Proxmox host")
+
+
+def case_plain_linux_points_to_host_mode():
+    r = subprocess.run(["bash", "-c", open(f"{ROOT}/install.sh").read()], cwd="/tmp", capture_output=True, text=True,
+                       timeout=60, env=env(NONINTERACTIVE=1, PATH="/usr/sbin:/usr/bin:/sbin:/bin"))
+    out = clean(r.stdout + r.stderr)
+    check(r.returncode != 0 and "add ' _ host'" in out, f"no pointer to host mode\n{out[-1500:]}")
+
+
 CASES = [v for k, v in sorted(globals().items()) if k.startswith("case_")]
 
 if __name__ == "__main__":

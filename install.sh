@@ -7,6 +7,9 @@
 #   ... install.sh)" _ update <ctid>...        update them
 #   ... install.sh)" _ share-cache <ctid>...   give them one shared cache, then update
 #
+# Without Proxmox, straight on this Debian/Ubuntu machine (docs/install-linux.md):
+#   ... install.sh)" _ host
+#
 # Creates a Debian LXC with Docker, registers N GitHub Actions runners using the
 # registration token ("pair code") from GitHub, builds a runner image modeled on
 # GitHub's hosted ubuntu-24.04 image and starts everything as systemd services.
@@ -264,19 +267,22 @@ pve() {   # pve <seconds> <cmd...>
 
 preflight() {
   [[ $EUID -eq 0 ]] || die "Run as root on the Proxmox VE host."
-  command -v pveversion >/dev/null || die "This script must run on a Proxmox VE host."
+  command -v pveversion >/dev/null || die "This script must run on a Proxmox VE host. On another Debian/Ubuntu machine, add ' _ host' to the command (docs/install-linux.md)."
   local c
   for c in pct pveam pvesm pvesh whiptail timeout; do command -v "$c" >/dev/null || die "missing command: $c"; done
   [[ "$(dpkg --print-architecture)" == amd64 ]] || die "Only amd64 Proxmox hosts are supported."
   local ver; ver="$(pve 20 pveversion | grep -oP 'pve-manager/\K[0-9.]+' || true)"
   [[ "${ver%%.*}" =~ ^[0-9]+$ && "${ver%%.*}" -ge 8 ]] || die "Proxmox VE 8 or newer required (found: '${ver:-unknown}')."
-  if [[ "$NONINTERACTIVE" != 1 ]]; then
-    [[ -t 0 && -t 1 ]] || die "Needs an interactive terminal. Run it in a shell, or use NONINTERACTIVE=1 (see README)."
-    local rows cols
-    read -r rows cols < <(stty size 2>/dev/null || echo "24 80")
-    (( rows >= 24 && cols >= 80 )) || die "Terminal is ${cols}x${rows}; the dialogs need at least 80x24. Enlarge the window and retry."
-  fi
+  check_terminal
   msg_ok "Proxmox VE ${ver} host, running as root"
+}
+
+check_terminal() {
+  [[ "$NONINTERACTIVE" == 1 ]] && return 0
+  [[ -t 0 && -t 1 ]] || die "Needs an interactive terminal. Run it in a shell, or use NONINTERACTIVE=1 (see README)."
+  local rows cols
+  read -r rows cols < <(stty size 2>/dev/null || echo "24 80")
+  (( rows >= 24 && cols >= 80 )) || die "Terminal is ${cols}x${rows}; the dialogs need at least 80x24. Enlarge the window and retry."
 }
 
 # -------------------------------------------------------------- github input --
@@ -692,9 +698,10 @@ Continue?" "$whiptail_height" 78 >&2 || exit_cancel
 # /usr/local/bin in PATH (-> "gha-runners: command not found").
 CT_ENV=(env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
         LANG=C.UTF-8 LC_ALL=C.UTF-8 LANGUAGE= DEBIAN_FRONTEND=noninteractive)
-ct() {   # ct <ctid> <cmd...>
-  local id="$1"; shift
-  ( trap '' HUP; pct exec "$id" -- "${CT_ENV[@]}" "$@" )
+ct() {   # ct <ctid|local> <cmd...>
+  local id="$1" via=(); shift
+  [[ "$id" == local ]] || via=(pct exec "$id" --)
+  ( trap '' HUP; "${via[@]}" "${CT_ENV[@]}" "$@" )
 }
 
 # Newest Debian 13 (else 12) standard template FOR THIS HOST'S ARCHITECTURE.
@@ -1151,8 +1158,10 @@ push_bootstrap() {   # uses CTID, CUR_PREFIX
     printf 'RUNNER_FLAVOR=%q\n' "$RUNNER_FLAVOR"
     printf 'RUNNER_CPUS=%q\n' "$RUNNER_CPUS"
     printf 'RUNNER_MEM=%q\n' "$RUNNER_MEM"
+    printf 'SHARED_DOCKER=%q\n' "${SHARED_DOCKER:-0}"
   } >"$tmp"
-  pct push "$CTID" "$tmp" /root/.gha-bootstrap.env --perms 600
+  if [[ "$CTID" == local ]]; then install -m 600 "$tmp" /root/.gha-bootstrap.env
+  else pct push "$CTID" "$tmp" /root/.gha-bootstrap.env --perms 600; fi
   rm -f "$tmp"; BOOTSTRAP_TMP=""
 }
 
@@ -1262,11 +1271,12 @@ finish_all() {
 
 # The runner prints "Listening for Jobs" once it is connected to GitHub.
 wait_online() {   # wait_online <ctid> [only log lines since "YYYY-MM-DD HH:MM:SS"]
-  local id="$1" since=(-n 200) name names _ total online
+  local id="$1" since=(-n 200) name names _ total online where="" logs="gha-runners logs <name>"
   [[ -n "${2:-}" ]] && since=(--since "$2")
+  [[ "$id" == local ]] || where=" in ${id}" logs="pct exec ${id} -- /usr/local/bin/${logs}"
   names="$(ct "$id" bash -c 'ls /etc/gha-runners/runners/ | sed -n "s/\.env$//p"')"
   total="$(wc -w <<<"$names")"
-  msg_info "Waiting for runner(s) in ${id} to connect to GitHub"
+  msg_info "Waiting for runner(s)${where} to connect to GitHub"
   for _ in $(seq 1 45); do
     online=0
     for name in $names; do
@@ -1276,7 +1286,7 @@ wait_online() {   # wait_online <ctid> [only log lines since "YYYY-MM-DD HH:MM:S
     if (( online == total )); then msg_ok "Online in GitHub: ${names//$'\n'/, }"; return 0; fi
     sleep 4
   done
-  msg_warn "${online}/${total} runner(s) online after 3 min - check: pct exec ${id} -- /usr/local/bin/gha-runners logs <name>"
+  msg_warn "${online}/${total} runner(s) online after 3 min - check: ${logs}"
   return 1
 }
 
@@ -1397,6 +1407,172 @@ host_command() {
   printf '\n %s✔ Done: CT %s%s\n' "$GN" "$*" "$CL"
 }
 
+# ------------------------------------------------------------ any Linux host --
+host_preflight() {
+  [[ $EUID -eq 0 ]] || die "Run as root (sudo)."
+  command -v pveversion >/dev/null && die "This is a Proxmox VE host: run the installer without 'host' to put the runners into LXC containers."
+  [[ -d /run/systemd/system ]] || die "systemd is not running here: the runners are systemd services."
+  local os_id os_ver os_name arch
+  IFS='|' read -r os_id os_ver os_name < <(. /etc/os-release; echo "${ID}|${VERSION_ID:-}|${PRETTY_NAME:-$ID}")
+  case "${os_id} ${os_ver}" in
+    "debian 12"|"debian 13"|"ubuntu 22.04"|"ubuntu 24.04") ;;
+    debian*|ubuntu*) msg_warn "${os_name} is untested (supported: Debian 12/13, Ubuntu 22.04/24.04)" ;;
+    *) die "${os_name} is not supported: use Debian 12/13 or Ubuntu 22.04/24.04." ;;
+  esac
+  arch="$(dpkg --print-architecture)"
+  case "$arch" in
+    amd64) ;;
+    arm64) msg_warn "No prebuilt image for arm64: the runner image is built on this machine" ;;
+    *) die "Only amd64 and arm64 are supported (found: ${arch})." ;;
+  esac
+  if command -v docker >/dev/null && ! dpkg -s docker-ce >/dev/null 2>&1; then
+    die "Docker is installed from another source (docker.io, snap, rootless...). Use a machine without Docker or with Docker CE from download.docker.com."
+  fi
+  if [[ "$NONINTERACTIVE" != 1 ]] && ! command -v whiptail >/dev/null; then
+    step "Installing whiptail" "Installed whiptail" -- bash -c 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y whiptail'
+  fi
+  check_terminal
+  msg_ok "${os_name} (${arch}), running as root"
+}
+
+check_shared_docker() {
+  command -v docker >/dev/null || return 0
+  local others
+  others="$(docker ps -a --format '{{.Names}}' 2>/dev/null | grep -vc '^gha-' || true)"
+  others=$(( others + $(docker volume ls -q 2>/dev/null | wc -l) ))
+  (( others > 0 )) || return 0
+  [[ "${SHARED_DOCKER:-0}" == 1 ]] && return 0
+  [[ "$NONINTERACTIVE" == 1 ]] && die "Docker on this machine already has containers or volumes. Use a dedicated VM, or set SHARED_DOCKER=1 (docs/install-linux.md)."
+  w_yesno "Docker on this machine already has containers or volumes.
+
+The runners share this Docker. Installing restarts Docker, and the cleanup
+(hourly, and when the disk is 80% full) removes STOPPED containers, UNUSED
+images and UNUSED volumes - including yours. Running containers are kept.
+Jobs get root on this machine through the Docker socket.
+
+A dedicated VM is strongly recommended. Share this Docker anyway?" 0 || die "Aborted: use a dedicated VM."
+  SHARED_DOCKER=1
+}
+
+ask_host_settings() {
+  RUNNER_FLAVOR="$(w_menu "Runner image" "$RUNNER_FLAVOR" \
+    standard "git, gh, Docker, Python, Node, build tools, kubectl, helm (~3 GB)" \
+    full     "standard + Go, Java, .NET, Rust, PHP, Ruby, pwsh, browsers, clouds (~13 GB)" \
+    full-plus "full + pinned CI stack: bun, Valkey, NATS, OpenBao... (~15 GB)")"
+  RUNNER_COUNT="$(w_ask "How many jobs should be able to run AT THE SAME TIME?
+(one runner per job)" "$RUNNER_COUNT" valid_count "Enter a whole number from 1 to 32.")"
+  LAYOUT=shared
+  ask_size
+  RUNNER_PREFIX="$(w_ask "Runner name as shown in GitHub (-1, -2, ... is appended when more than one)" \
+    "$RUNNER_PREFIX" valid_name "Letters, digits and '-', must start with a letter or digit." normalize_trim)"
+  RUNNER_LABELS="$(w_ask "Extra labels for runs-on, comma-separated, e.g. docker,gpu
+(self-hosted, linux, x64 are added automatically)" "$RUNNER_LABELS" valid_labels \
+    "Each label may use letters, digits, '.', '_' and '-' (max 64). Separate labels with commas." normalize_labels)"
+  if [[ ! "$GH_URL" =~ ^https://[^/]+/[^/]+/[^/]+$ ]] || [[ "$GH_URL" == */enterprises/* ]]; then
+    RUNNER_GROUP="$(w_ask "Runner group (empty = Default)" "$RUNNER_GROUP" valid_any "" normalize_trim)"
+  fi
+
+  valid_url "$GH_URL" || die "Invalid GitHub URL: $GH_URL"
+  valid_name "$RUNNER_PREFIX" || die "Invalid runner name: $RUNNER_PREFIX"
+  valid_count "$RUNNER_COUNT" || die "Runner count must be 1-32"
+  local n
+  for n in RUNNER_CPUS RUNNER_MEM; do valid_posint "${!n}" || die "$n must be a positive number"; done
+  RUNNER_LABELS="$(normalize_labels "$RUNNER_LABELS")"
+  valid_labels "$RUNNER_LABELS" || die "Invalid labels: $RUNNER_LABELS"
+
+  local free_gb; free_gb="$(df -BG --output=avail / | tail -1 | tr -dc 0-9)"
+  if (( free_gb < DISK )); then
+    w_yesno "Only ${free_gb} GB are free on /, ${DISK} GB are recommended for
+${RUNNER_COUNT} x ${SIZE} runner(s) with the '${RUNNER_FLAVOR}' image.
+
+Continue anyway?" 0 || die "Free up disk space, or choose a smaller image or fewer runners."
+  fi
+  local mode=persistent; [[ "$RUNNER_EPHEMERAL" == 1 ]] && mode=ephemeral
+  w_yesno "Ready to install on this machine ($(hostname)):
+
+  Runners     ${RUNNER_COUNT} x ${RUNNER_PREFIX}, ${RUNNER_CPUS} CPU / ${RUNNER_MEM} MB each (${SIZE})
+  GitHub      ${GH_URL}
+  Mode        ${mode}, image ${RUNNER_FLAVOR}
+  Labels      self-hosted,linux,x64${RUNNER_LABELS:+,${RUNNER_LABELS}}
+  Directory   ${CT_REPO_DIR}
+
+There is no firewall between jobs and your network: jobs can reach
+everything this machine can. Continue?" 1 || exit_cancel
+}
+
+deploy_local() {
+  step "Installing git and curl" "Installed git and curl" \
+    -- bash -c 'apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git curl ca-certificates'
+  local src_dir
+  src_dir="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || true)"
+  if [[ -n "$src_dir" && -f "${src_dir}/lxc/setup.sh" ]]; then
+    [[ "$src_dir" == "$CT_REPO_DIR" ]] || step "Copying local checkout" "Deployed scripts from ${src_dir}" \
+      -- bash -c "mkdir -p '$CT_REPO_DIR' && tar -C '$src_dir' -cf - . | tar -xf - -C '$CT_REPO_DIR'"
+  elif [[ -d "${CT_REPO_DIR}/.git" ]]; then
+    step "Updating installer scripts" "Updated scripts in ${CT_REPO_DIR}" -- git -C "$CT_REPO_DIR" pull --ff-only
+  else
+    step "Downloading installer scripts" "Deployed scripts (${REPO_BRANCH})" \
+      -- git clone --depth 1 --branch "$REPO_BRANCH" "$REPO_URL" "$CT_REPO_DIR"
+  fi
+}
+
+host_install() {
+  if compgen -G "/etc/gha-runners/runners/*.env" >/dev/null && command -v gha-runners >/dev/null; then
+    exec gha-runners update
+  fi
+  header
+  printf ' %sLog: %s%s\n' "$DIM" "$LOG_FILE" "$CL"
+  host_preflight
+  CTID=local
+  defaults
+  RUNNER_PREFIX="${RUNNER_PREFIX:-$(hostname -s)}"
+  valid_name "$RUNNER_PREFIX" || RUNNER_PREFIX=gha-runners
+  check_shared_docker
+  w_yesno "This installs Docker and GitHub Actions runners directly on this machine.
+
+Jobs get root on it through the Docker socket and can reach your network.
+Use a dedicated VM, never your workstation or a server with other duties.
+
+Proceed?" 1 || exit_cancel
+  ask_github
+  msg_ok "GitHub target: ${GH_URL}"
+  ask_host_settings
+  header
+  [[ "$FANCY" == 1 ]] && tput civis 2>/dev/null
+  printf ' %sLog: %s%s\n\n' "$DIM" "$LOG_FILE" "$CL"
+  deploy_local
+  local rc=0
+  msg_info "Installing Docker" '^==> '
+  run env SHARED_DOCKER="${SHARED_DOCKER:-0}" bash "${CT_REPO_DIR}/lxc/setup.sh" docker || rc=$?
+  if [[ "$rc" != 0 ]]; then
+    msg_error "Installing Docker failed (exit ${rc})"
+    show_log_tail
+    [[ "$rc" == 3 ]] && msg_warn "Docker cannot start containers here. Inside LXC/LXD/Incus enable nesting and keyctl (docs/install-linux.md)."
+    exit "$rc"
+  fi
+  msg_ok "Installed Docker ($(docker --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'))"
+  CUR_PREFIX="$RUNNER_PREFIX"
+  register_runners
+  build_image local
+  step "Starting runners" "Started runners" -- bash "${CT_REPO_DIR}/lxc/setup.sh" start
+  wait_online local || true
+  cat <<SUMMARY
+
+${GN}${APP} are online: ${RUNNER_COUNT} runner(s) = ${RUNNER_COUNT} job(s) in parallel.${CL}
+
+  GitHub    : ${GH_URL}  (Settings > Actions > Runners)
+  Use in workflows:
+      runs-on: [self-hosted, linux${RUNNER_LABELS:+, ${RUNNER_LABELS//,/, }}]
+
+  Manage: gha-runners list | add | remove <name> | logs <name> -f | limits | update
+  Update: run the same command again, or: gha-runners update
+
+${YW}Security:${CL} jobs can use the Docker socket, i.e. they have root on this
+machine, and nothing keeps them off your LAN. Do not attach these runners
+to public repositories that accept pull requests from forks.
+SUMMARY
+}
+
 summary() {
   local i id ip rows=""
   for i in "${!PLAN_IDS[@]}"; do
@@ -1432,6 +1608,7 @@ SUMMARY
 main() {
   case "${1:-}" in
     update|share-cache) host_command "$@"; return ;;
+    host) host_install; return ;;
   esac
   # Running inside an existing installation = update it (helper-script convention).
   if ! command -v pveversion >/dev/null && command -v gha-runners >/dev/null; then

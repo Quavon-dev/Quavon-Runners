@@ -61,7 +61,7 @@ configure_daemon() {
   # Classic image store: the containerd store (Docker 29+ default) keeps
   # every image twice. Existing installs switch with: gha-runners migrate-storage
   [[ -f "$file" ]] || echo '{ "log-driver": "json-file", "log-opts": { "max-size": "20m", "max-file": "3" },
-  "features": { "containerd-snapshotter": false } }' >"$file"
+  "features": { "containerd-snapshotter": false } }' | jq --arg shared "${SHARED_DOCKER:-0}" 'if $shared == "1" then del(.features) else . end' >"$file"
   cache_cap_gb="$(df -BG --output=size / | awk 'NR == 2 { v = int($1 / 4); print (v < 2 ? 2 : v) }')"
   [[ "$(sed -n 's/^DOCKER_HUB_MIRROR=//p' "${CONF_DIR}/config.env" 2>/dev/null)" == 0 ]] || mirror=on
   new="$(jq --arg cap "${cache_cap_gb}GB" --arg url "$DOCKER_MIRROR_URL" --arg mirror "$mirror" '
@@ -95,7 +95,7 @@ ensure_runner_user() {
   apt-get install -y --no-install-recommends libicu-dev libkrb5-3 zlib1g >/dev/null
 }
 
-write_config() {   # write_config <flavor> <labels> <cpus> <mem MB>
+write_config() {   # write_config <flavor> <labels> <cpus> <mem MB> <shared docker>
   {
     printf 'REPO_DIR=%q\n' "$REPO_DIR"
     printf 'RUNNER_FLAVOR=%q\n' "$1"
@@ -103,6 +103,7 @@ write_config() {   # write_config <flavor> <labels> <cpus> <mem MB>
     printf 'DEFAULT_LABELS=%q\n' "$2"
     printf 'RUNNER_CPUS=%q\n' "${3:-}"
     printf 'RUNNER_MEM=%q\n' "${4:-}"
+    if [[ "${5:-0}" == 1 ]]; then printf 'SHARED_DOCKER=1\n'; fi
   } >"${CONF_DIR}/config.env"
 }
 
@@ -118,7 +119,7 @@ setup_register() {
 
   setup_files
   ensure_runner_user
-  write_config "$RUNNER_FLAVOR" "${RUNNER_LABELS:-}" "${RUNNER_CPUS:-}" "${RUNNER_MEM:-}"
+  write_config "$RUNNER_FLAVOR" "${RUNNER_LABELS:-}" "${RUNNER_CPUS:-}" "${RUNNER_MEM:-}" "${SHARED_DOCKER:-0}"
 
   # Re-runs (e.g. after a name clash) only add the runners still missing.
   local i name args have
