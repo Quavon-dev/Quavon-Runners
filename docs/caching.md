@@ -9,7 +9,7 @@ These caches live in the LXC. They need no workflow changes. Each cache server i
 | **Docker Hub mirror** | `docker pull`, `services:`, `container:` jobs, `FROM` in builds, also in buildx builders; no Docker Hub rate limits | `registry:3` pull-through cache on `docker0:29172`, data in `/var/lib/gha-runners/mirror-cache` |
 | **ghcr.io, quay.io and mcr.microsoft.com mirrors** | `FROM` in buildx builders (`docker/setup-buildx-action`), the prebuilt runner image | `registry:3` pull-through caches on `docker0:29174`, `:29175`, `:29176`, data in `/var/lib/gha-runners/{ghcr,quay,mcr}-cache` |
 | **apt proxy** | `sudo apt-get install` in jobs, for `http://` repositories (Ubuntu's own) | nginx on `docker0:29173`, data in `/var/lib/gha-runners/apt-cache` |
-| **Git checkout cache** | `actions/checkout` fetches only the commits since the last job of the repository (e.g. 50 KB instead of 15 MB), Git LFS objects included | each runner's `.git` per repository, in `/srv/gha-runners/<runner>/_git` |
+| **Git checkout cache** | `actions/checkout` fetches only the commits since the last job of the repository (e.g. 50 KB instead of 15 MB), Git LFS objects included | each runner's `.git` per repository, in `/srv/gha-runners/r<n>/_git` |
 | **Package caches** | npm, pip, pnpm, bun, Go modules and build cache, NuGet, anything else under `~/.cache`, even without a cache step | `~/.cache` and `~/.npm` of every runner, shared, in `/var/lib/gha-runners/package-cache` |
 
 ```mermaid
@@ -82,10 +82,15 @@ sequenceDiagram
   `setup-go`, `setup-python` & co. put the versions they download) is shared too, so each
   version is downloaded once for all runners. `GOFLAGS=-modcacherw` keeps Go's module
   cache writable, so `setup-go` can restore its cache over it.
-- **Paths per runner.** Every runner has its own workspace path (it contains the runner
-  name), because `container:` jobs need the same path on the LXC. Caches whose paths
-  include the workspace, such as the `target` directory of `Swatinem/rust-cache`, are
-  therefore only restored on the runner that saved them.
+- **Paths per runner.** A runner's directory is a slot, not its name: `/srv/gha-runners/r1`
+  for the first runner of an LXC, `r2` for the second, and so on. `container:` jobs need
+  the same path on the LXC, so this path is also the workspace path in the job. With one
+  runner per LXC (the `separate` layout) every runner works in `/srv/gha-runners/r1/_work`,
+  and caches keyed on absolute paths (Go's build cache, the `target` directory of
+  `Swatinem/rust-cache`) hit on all of them. Several runners in one LXC share one Docker
+  daemon and need different paths, so there such caches are only restored on the runner
+  of the same slot. `gha-runners update` moves runners of older installs from
+  `/srv/gha-runners/<name>` to a slot (one in the middle of a job at the next update).
 
 All cache servers listen only on the `docker0` address (`172.17.0.1`), on the host
 network: runners, job containers and buildx builders reach them, the LAN doesn't (on

@@ -74,6 +74,34 @@ t "cli api org"   "$(token_api https://github.com/o remove)" "https://api.github
 t "cli api ent"   "$(token_api https://github.com/enterprises/e registration)" "https://api.github.com/enterprises/e/actions/runners/registration-token"
 t "cli api ghes"  "$(token_api https://ghe.corp/t/r registration)" "https://ghe.corp/api/v3/repos/t/r/actions/runners/registration-token"
 
+# runner directories: lowest free slot, old name-based ones moved by update
+saved_root="$RUNNERS_ROOT" saved_conf="$RUNNERS_CONF"
+RUNNERS_ROOT="$(mktemp -d)" RUNNERS_CONF="$(mktemp -d)"
+t "slot: first runner gets r1" "$(free_slot_dir)" "$RUNNERS_ROOT/r1"
+mkdir "$RUNNERS_ROOT/r1" "$RUNNERS_ROOT/r3"
+t "slot: a gap is filled first" "$(free_slot_dir)" "$RUNNERS_ROOT/r2"
+echo "RUNNER_DIR=$RUNNERS_ROOT/r2" >"$RUNNERS_CONF/a.env"
+t "slot: taken by a runner whose directory is missing" "$(free_slot_dir)" "$RUNNERS_ROOT/r4"
+rm "$RUNNERS_CONF/a.env"; rmdir "$RUNNERS_ROOT/r1" "$RUNNERS_ROOT/r3"
+t "slot: freed by a removed runner" "$(free_slot_dir)" "$RUNNERS_ROOT/r1"
+ok "slot dirs" 'is_slot_dir "$RUNNERS_ROOT/r1" && is_slot_dir "$RUNNERS_ROOT/r12" && ! is_slot_dir "$RUNNERS_ROOT/r0" && ! is_slot_dir "$RUNNERS_ROOT/runner-1" && ! is_slot_dir "$RUNNERS_ROOT/r1/x"'
+systemctl() { if [[ "$1" == is-active ]]; then [[ "$3" == gha-runner@busy.service ]]; else echo "$*" >>"$RUNNERS_ROOT/calls"; fi; }
+for n in r1 old busy stale; do
+  mkdir -p "$RUNNERS_ROOT/$n/_work"; printf 'RUNNER_NAME=%s\nRUNNER_DIR=%s\nGITHUB_URL=x\n' "$n" "$RUNNERS_ROOT/$n" >"$RUNNERS_CONF/$n.env"
+done
+touch "$RUNNERS_ROOT/busy/.gha-job-running" "$RUNNERS_ROOT/stale/.gha-job-running"
+migrate_runner_dirs >"$RUNNERS_ROOT/out" 2>&1
+t "migrate: idle runner moved to a free slot" "$(env_get old RUNNER_DIR) $(find "$RUNNERS_ROOT" -mindepth 1 -maxdepth 1 -type d -name "r*" | wc -l)" "$RUNNERS_ROOT/r2 3"
+ok "migrate: stopped first, files and settings kept" 'grep -qx "stop gha-runner@old.service" "$RUNNERS_ROOT/calls" && [[ -d $RUNNERS_ROOT/r2/_work && ! -e $RUNNERS_ROOT/old ]] && [[ $(env_get old GITHUB_URL) == x ]]'
+ok "migrate: busy runner skipped with a warning" '[[ $(env_get busy RUNNER_DIR) == $RUNNERS_ROOT/busy && -d $RUNNERS_ROOT/busy ]] && ! grep -q busy "$RUNNERS_ROOT/calls" && grep -q "runner .busy. is running a job" "$RUNNERS_ROOT/out"'
+ok "migrate: stopped runner with a stale job mark moved" '[[ $(env_get stale RUNNER_DIR) == $RUNNERS_ROOT/r3 ]]'
+ok "migrate: slot runner untouched" '[[ $(env_get r1 RUNNER_DIR) == $RUNNERS_ROOT/r1 ]] && ! grep -q r1 "$RUNNERS_ROOT/calls"'
+rm "$RUNNERS_ROOT/calls"; migrate_runner_dirs >/dev/null 2>&1
+ok "migrate: a re-run changes nothing" '[[ ! -e $RUNNERS_ROOT/calls && $(env_get old RUNNER_DIR) == $RUNNERS_ROOT/r2 ]]'
+unset -f systemctl
+rm -rf "$RUNNERS_ROOT" "$RUNNERS_CONF"
+RUNNERS_ROOT="$saved_root" RUNNERS_CONF="$saved_conf"
+
 # disk reserve: 10% of the disk, at least 512 MB, at most 10 GB, 0 = off
 disk_size_mb() { echo 20000; }
 t "reserve 10%"        "$(reserve_target_mb)" "2000"

@@ -51,7 +51,7 @@ chk "no locale warnings" '! grep -qiE "setting locale failed|cannot set LC_" /tm
 chk "registration reached GitHub" 'grep -q "Http response code" /tmp/register.log'
 chk "invalid token -> non-zero exit (rc=$rc)" '[[ $rc != 0 && $rc != 4 ]]'
 chk "bootstrap with token deleted" '[[ ! -e /root/.gha-bootstrap.env ]]'
-chk "no half-registered runner dir left" '[[ ! -e /srv/gha-runners/itest-1/.runner && ! -d /srv/gha-runners/itest-1 ]]'
+chk "no half-registered runner dir left" '[[ -z "$(ls -A /srv/gha-runners)" ]]'
 chk "token never printed by registration" '! grep -q "AAAAAAAAAAAAAAAAAAAAAAAAAAAA" /tmp/register.log'
 chk "CLI + units installed" 'command -v gha-runners >/dev/null && [[ -f /etc/systemd/system/gha-runner@.service ]]'
 chk "prune timer enabled" 'systemctl is-enabled --quiet gha-runners-prune.timer'
@@ -96,20 +96,17 @@ chk "image built in $((SECONDS - start))s (rc=$rc)" '[[ $rc == 0 ]] && docker im
 [[ $rc == 0 ]] || tail -20 /tmp/build.log
 
 section "runner service (real registration or simulated)"
-name=itest-1 dir=/srv/gha-runners/itest-1
+name=itest-1 dir=/srv/gha-runners/r1
 if [[ -n "${GH_TEST_TOKEN:-}" ]]; then
   GHA_TOKEN="$GH_TEST_TOKEN" gha-runners add --name "$name" --url "$GH_TEST_URL" --labels itest --no-start >/tmp/add.log 2>&1
   chk "registered with GitHub" '[[ -f $dir/.runner ]]'
 else
-  # simulate a registered runner: real binaries + fake registration files
-  source <(sed -n "/^install_runner_binaries()/,/^}/p;/^latest_runner_version()/,/^}/p;/^runner_arch()/,/^}/p;/^info()/p;/^die()/p" /usr/local/bin/gha-runners)
-  CACHE_DIR=/var/cache/gha-runners RUNNER_UID=1001 install_runner_binaries "$dir" >/dev/null
-  echo '{"agentId":1,"agentName":"itest-1","serverUrl":"https://pipelinesghubeus1.actions.githubusercontent.com/x/","gitHubUrl":"https://github.com/Quavon-dev/Quavon-Runners","workFolder":"_work"}' >"$dir/.runner"
-  chown -R 1001:1001 "$dir"
-  install -d -m 0700 /etc/gha-runners/runners
-  printf 'RUNNER_NAME=%s\nRUNNER_DIR=%s\nGITHUB_URL=https://github.com/Quavon-dev/Quavon-Runners\nRUNNER_LABELS=docker\nRUNNER_GROUP=\nRUNNER_EPHEMERAL=0\n' "$name" "$dir" >/etc/gha-runners/runners/$name.env
-  chmod 600 /etc/gha-runners/runners/$name.env
+  # gha-runners add with a simulated registration: real binaries + fake registration files
+  (source <(sed '$d' /usr/local/bin/gha-runners)
+   runner_config() { echo '{"agentId":1,"agentName":"itest-1","serverUrl":"https://pipelinesghubeus1.actions.githubusercontent.com/x/","gitHubUrl":"https://github.com/Quavon-dev/Quavon-Runners","workFolder":"_work"}' >"$1/.runner"; chown 1001:1001 "$1/.runner"; }
+   cmd_add --name "$name" --url https://github.com/Quavon-dev/Quavon-Runners --token AAAAAAAAAAAAAAAAAAAA --no-start) >/tmp/add.log 2>&1
 fi
+chk "a new runner gets the first slot directory" '[[ -x $dir/run.sh && $(stat -c %u "$dir") == 1001 ]] && grep -qx "RUNNER_DIR=$dir" /etc/gha-runners/runners/$name.env' || tail -5 /tmp/add.log
 systemctl start "gha-runner@$name"
 for _ in $(seq 1 30); do docker inspect "gha-$name" >/dev/null 2>&1 && break; sleep 1; done
 insp="$(docker inspect "gha-$name" 2>/dev/null || true)"
@@ -278,8 +275,37 @@ chk "prune --all succeeds (rc=$rc)" '[[ $rc == 0 ]]'
 chk "prune keeps the runner image with runners stopped" 'docker image inspect quavon/gha-runner:standard >/dev/null 2>&1'
 chk "prune drops unused job images" '! docker image inspect busybox >/dev/null 2>&1'
 chk "prune drops runner images of other flavors" '! docker image inspect quavon/gha-runner:full >/dev/null 2>&1'
+
+section "update moves runners from name directories to slots"
+for n in itest-old itest-busy; do
+  cp -a "$dir" "/srv/gha-runners/$n"
+  rm -rf "/srv/gha-runners/$n/_work" "/srv/gha-runners/$n/_diag" "/srv/gha-runners/$n"/.credentials*
+  sed -e "s/^RUNNER_NAME=.*/RUNNER_NAME=$n/" -e "s|^RUNNER_DIR=.*|RUNNER_DIR=/srv/gha-runners/$n|" "/etc/gha-runners/runners/$name.env" >"/etc/gha-runners/runners/$n.env"
+  chmod 600 "/etc/gha-runners/runners/$n.env"
+  systemctl start "gha-runner@$n"
+done
+listening() {   # past the entrypoint, which clears the job mark
+  for _ in $(seq 1 60); do docker top "$1" 2>/dev/null | grep -qE 'run(-helper)?\.sh|Runner\.Listener' && return 0; sleep 1; done
+  return 1
+}
+mark_busy() { listening gha-itest-busy; touch /srv/gha-runners/itest-busy/.gha-job-running; }
+mark_busy
 gha-runners _update_image </dev/null >/tmp/update-image.log 2>&1; rc=$?
 chk "update rebuilds in place on the classic store (rc=$rc)" '[[ $rc == 0 ]] && ! grep -q "switching to the classic" /tmp/update-image.log && grep -q "restart: all" /tmp/update-image.log'
+new=/srv/gha-runners/r2
+chk "an idle runner is moved to the lowest free slot" '[[ ! -e /srv/gha-runners/itest-old && -x $new/run.sh ]] && grep -qx "RUNNER_DIR=$new" /etc/gha-runners/runners/itest-old.env && grep -q "itest-old. moved from /srv/gha-runners/itest-old to $new" /tmp/update-image.log'
+chk "a runner in a job keeps its directory" '[[ -d /srv/gha-runners/itest-busy ]] && grep -qx "RUNNER_DIR=/srv/gha-runners/itest-busy" /etc/gha-runners/runners/itest-busy.env && grep -q "itest-busy. is running a job" /tmp/update-image.log'
+listening gha-itest-old
+chk "the moved runner starts with the new same-path mount" 'systemctl is-active --quiet gha-runner@itest-old && docker inspect gha-itest-old | grep -q "\"$new:$new\"" && ! docker inspect gha-itest-old | grep -q /srv/gha-runners/itest-old'
+chk "nothing in the moved runner refers to the old directory" '[[ -z "$(grep -rlF /srv/gha-runners/itest-old "$new" --exclude-dir=_diag)" ]]'
+docker exec gha-itest-old bash -c "mkdir -p $new/_work/t && echo hello >$new/_work/t/f && docker run --rm -v $new/_work/t:/w busybox cat /w/f" >/tmp/samepath.log 2>&1
+chk "container jobs of the moved runner see its workspace" 'grep -qx hello /tmp/samepath.log'
+mark_busy
+(source <(sed '$d' /usr/local/bin/gha-runners); migrate_runner_dirs) >/tmp/migrate-again.log 2>&1
+chk "a second update moves nothing" '! grep -q moved /tmp/migrate-again.log && grep -qx "RUNNER_DIR=$new" /etc/gha-runners/runners/itest-old.env && systemctl is-active --quiet gha-runner@itest-old'
+gha-runners remove itest-old </dev/null >/dev/null 2>&1
+gha-runners remove itest-busy </dev/null >/dev/null 2>&1
+chk "remove frees the slot" '[[ ! -e $new && ! -e /srv/gha-runners/itest-busy ]] && [[ $(source <(sed "\$d" /usr/local/bin/gha-runners); free_slot_dir) == $new ]]'
 gha-runners migrate-storage </dev/null >/tmp/migrate.log 2>&1; rc=$?
 chk "migrate-storage is a no-op on the classic store (rc=$rc)" '[[ $rc == 0 ]] && grep -q "already uses the classic" /tmp/migrate.log'
 chk "hourly prune service runs" 'systemctl start gha-runners-prune.service'

@@ -24,9 +24,10 @@ What to keep in mind:
   (the tool cache is now shared, see [Caching](caching.md)). Both cost the self-hosted side
   time in the Go and Node jobs.
 - The Rust warm runs missed their cache because `Swatinem/rust-cache` keys on the
-  per-runner workspace path, and the serial Rust runs failed because `rust-cache` deleted
-  `rustup` from the persistent runners (since restored, and the workflow now sets
-  `cache-bin: false`).
+  workspace path, which then contained the runner name (now the same on every LXC with
+  one runner, see [Caching](caching.md)), and the serial Rust runs failed because
+  `rust-cache` deleted `rustup` from the persistent runners (since restored, and the
+  workflow now sets `cache-bin: false`).
 - CPU-bound steps depend on the CPU. Four jobs at once on a 6-core desktop CPU against
   dedicated EPYC/Xeon cores is a contest the self-hosted side loses.
 - GitHub gives **public** repositories 4 vCPU / 16 GB; these numbers compare against the
