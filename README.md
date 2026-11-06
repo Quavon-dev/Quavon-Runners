@@ -1,5 +1,8 @@
 # Quavon Docker Runners
 
+[![ci](https://github.com/Quavon-dev/quavon-docker-runners/actions/workflows/ci.yml/badge.svg)](https://github.com/Quavon-dev/quavon-docker-runners/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Quavon-dev/quavon-docker-runners/badge)](https://scorecard.dev/viewer/?uri=github.com/Quavon-dev/quavon-docker-runners)
+
 One command on a Proxmox VE host gives you a Debian LXC with Docker and one or
 more **GitHub Actions self-hosted runners**. Each runner is a Docker container
 whose image is modeled on GitHub's hosted `ubuntu-24.04` runner. The image is
@@ -459,6 +462,7 @@ checkout is copied into the container and nothing is cloned.
   another repository restores. The actions cache is scoped per repository, but jobs have
   root on the LXC and could change its files too, just like they could change the runner
   binaries for later jobs. Only attach repositories that trust each other.
+- Report vulnerabilities privately, see [SECURITY.md](SECURITY.md).
 - If Docker can't start containers in the LXC (a known AppArmor issue on some PVE
   versions), the installer offers `lxc.apparmor.profile: unconfined`, but only
   after you confirm it.
@@ -503,5 +507,8 @@ image/tools/gha-cleanup    disk cleanup inside the runner (hooks, disk guard, jo
 image/tools/gha-patch-runner  keeps the runner on the local actions cache
 image/tools/gha-git-cache     keeps .git between jobs for fast checkouts
 .github/workflows/image.yml   publishes the prebuilt images to GHCR
+.github/workflows/ci.yml      tests, actionlint, shellcheck, hadolint, zizmor, gitleaks
+.github/workflows/codeql.yml  CodeQL for the workflows and the Python tests
+.github/workflows/scorecard.yml  OpenSSF Scorecard
 tests/                     unit + end-to-end tests (fake Proxmox) and LXC integration test
 ```
