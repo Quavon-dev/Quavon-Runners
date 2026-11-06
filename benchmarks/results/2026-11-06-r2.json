@@ -1,0 +1,3780 @@
+{
+ "repository": "Quavon-dev/runner-benchmark",
+ "date": "2026-11-06",
+ "runs": [
+  {
+   "round": "cold",
+   "run_id": 42279430665,
+   "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42279430665",
+   "branch": "bench/r2",
+   "created_at": "2026-11-06T19:25:05Z",
+   "jobs": [
+    {
+     "workload": "node",
+     "side": "hosted",
+     "job_id": 128104222037,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42279430665/job/128104222037",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010932",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 115.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010932",
+      "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 2.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup node",
+       "seconds": 8.0
+      },
+      {
+       "name": "Install",
+       "seconds": 4.0
+      },
+      {
+       "name": "Build",
+       "seconds": 5.0
+      },
+      {
+       "name": "Test",
+       "seconds": 88.0
+      },
+      {
+       "name": "Post Setup node",
+       "seconds": 2.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "node",
+     "side": "self-hosted",
+     "job_id": 128104222514,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42279430665/job/128104222514",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-2",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 2.0,
+     "total_s": 137.0,
+     "probe": {
+      "runner": "docker-runners-1-2",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "16G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 5.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup node",
+       "seconds": 14.0
+      },
+      {
+       "name": "Install",
+       "seconds": 8.0
+      },
+      {
+       "name": "Build",
+       "seconds": 10.0
+      },
+      {
+       "name": "Test",
+       "seconds": 89.0
+      },
+      {
+       "name": "Post Setup node",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "rust",
+     "side": "hosted",
+     "job_id": 128104222576,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42279430665/job/128104222576",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010933",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 3.0,
+     "total_s": 81.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010933",
+      "cpu_model": "AMD EPYC 7763 64-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup rust",
+       "seconds": 9.0
+      },
+      {
+       "name": "Rust cache",
+       "seconds": 1.0
+      },
+      {
+       "name": "Build",
+       "seconds": 57.0
+      },
+      {
+       "name": "Post Rust cache",
+       "seconds": 4.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "go",
+     "side": "hosted",
+     "job_id": 128104222617,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42279430665/job/128104222617",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010934",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 207.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010934",
+      "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup go",
+       "seconds": 11.0
+      },
+      {
+       "name": "Build",
+       "seconds": 121.0
+      },
+      {
+       "name": "Test",
+       "seconds": 56.0
+      },
+      {
+       "name": "Post Setup go",
+       "seconds": 8.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "docker",
+     "side": "self-hosted",
+     "job_id": 128104222816,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42279430665/job/128104222816",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-4",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 2.0,
+     "total_s": 176.0,
+     "probe": {
+      "runner": "docker-runners-1-4",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "16G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 2.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 5.0
+      },
+      {
+       "name": "Setup buildx",
+       "seconds": 3.0
+      },
+      {
+       "name": "Build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Docker build",
+       "seconds": 153.0
+      },
+      {
+       "name": "Post Docker build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Setup buildx",
+       "seconds": 2.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "docker",
+     "side": "hosted",
+     "job_id": 128104222843,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42279430665/job/128104222843",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010935",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 180.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010935",
+      "cpu_model": "AMD EPYC 7763 64-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 2.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 3.0
+      },
+      {
+       "name": "Setup buildx",
+       "seconds": 7.0
+      },
+      {
+       "name": "Build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Docker build",
+       "seconds": 157.0
+      },
+      {
+       "name": "Post Docker build",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Setup buildx",
+       "seconds": 3.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "go",
+     "side": "self-hosted",
+     "job_id": 128104223076,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42279430665/job/128104223076",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-1",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 2.0,
+     "total_s": 245.0,
+     "probe": {
+      "runner": "docker-runners-1-1",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "12G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup go",
+       "seconds": 19.0
+      },
+      {
+       "name": "Build",
+       "seconds": 156.0
+      },
+      {
+       "name": "Test",
+       "seconds": 48.0
+      },
+      {
+       "name": "Post Setup go",
+       "seconds": 7.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "rust",
+     "side": "self-hosted",
+     "job_id": 128104223803,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42279430665/job/128104223803",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-3",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 2.0,
+     "total_s": 120.0,
+     "probe": {
+      "runner": "docker-runners-1-3",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "12G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 2.0
+      },
+      {
+       "name": "Setup rust",
+       "seconds": 15.0
+      },
+      {
+       "name": "Rust cache",
+       "seconds": 1.0
+      },
+      {
+       "name": "Build",
+       "seconds": 85.0
+      },
+      {
+       "name": "Post Rust cache",
+       "seconds": 4.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "round": "warm1",
+   "run_id": 42280057884,
+   "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280057884",
+   "branch": "bench/r2",
+   "created_at": "2026-11-06T19:29:25Z",
+   "jobs": [
+    {
+     "workload": "rust",
+     "side": "hosted",
+     "job_id": 128106419146,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280057884/job/128106419146",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010936",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 1.0,
+     "total_s": 37.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010936",
+      "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup rust",
+       "seconds": 7.0
+      },
+      {
+       "name": "Rust cache",
+       "seconds": 2.0
+      },
+      {
+       "name": "Build",
+       "seconds": 19.0
+      },
+      {
+       "name": "Post Rust cache",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "docker",
+     "side": "self-hosted",
+     "job_id": 128106419451,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280057884/job/128106419451",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-3",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 1.0,
+     "total_s": 141.0,
+     "probe": {
+      "runner": "docker-runners-1-3",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "12G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 5.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 5.0
+      },
+      {
+       "name": "Setup buildx",
+       "seconds": 4.0
+      },
+      {
+       "name": "Build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Docker build",
+       "seconds": 117.0
+      },
+      {
+       "name": "Post Docker build",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Setup buildx",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "go",
+     "side": "hosted",
+     "job_id": 128106419485,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280057884/job/128106419485",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010938",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 60.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010938",
+      "cpu_model": "AMD EPYC 7763 64-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 2.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup go",
+       "seconds": 22.0
+      },
+      {
+       "name": "Build",
+       "seconds": 4.0
+      },
+      {
+       "name": "Test",
+       "seconds": 24.0
+      },
+      {
+       "name": "Post Setup go",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "go",
+     "side": "self-hosted",
+     "job_id": 128106419491,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280057884/job/128106419491",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-1",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 1.0,
+     "total_s": 85.0,
+     "probe": {
+      "runner": "docker-runners-1-1",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "12G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 2.0
+      },
+      {
+       "name": "Setup go",
+       "seconds": 24.0
+      },
+      {
+       "name": "Build",
+       "seconds": 8.0
+      },
+      {
+       "name": "Test",
+       "seconds": 38.0
+      },
+      {
+       "name": "Post Setup go",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "node",
+     "side": "self-hosted",
+     "job_id": 128106419506,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280057884/job/128106419506",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-4",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 1.0,
+     "total_s": 126.0,
+     "probe": {
+      "runner": "docker-runners-1-4",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "17G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 2.0
+      },
+      {
+       "name": "Setup node",
+       "seconds": 1.0
+      },
+      {
+       "name": "Install",
+       "seconds": 7.0
+      },
+      {
+       "name": "Build",
+       "seconds": 12.0
+      },
+      {
+       "name": "Test",
+       "seconds": 91.0
+      },
+      {
+       "name": "Post Setup node",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "docker",
+     "side": "hosted",
+     "job_id": 128106419522,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280057884/job/128106419522",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010937",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 162.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010937",
+      "cpu_model": "AMD EPYC 7763 64-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 2.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 3.0
+      },
+      {
+       "name": "Setup buildx",
+       "seconds": 7.0
+      },
+      {
+       "name": "Build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Docker build",
+       "seconds": 140.0
+      },
+      {
+       "name": "Post Docker build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Setup buildx",
+       "seconds": 3.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "rust",
+     "side": "self-hosted",
+     "job_id": 128106419540,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280057884/job/128106419540",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-2",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 1.0,
+     "total_s": 79.0,
+     "probe": {
+      "runner": "docker-runners-1-2",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "16G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 5.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 2.0
+      },
+      {
+       "name": "Setup rust",
+       "seconds": 11.0
+      },
+      {
+       "name": "Rust cache",
+       "seconds": 1.0
+      },
+      {
+       "name": "Build",
+       "seconds": 50.0
+      },
+      {
+       "name": "Post Rust cache",
+       "seconds": 3.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "node",
+     "side": "hosted",
+     "job_id": 128106419737,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280057884/job/128106419737",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010939",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 127.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010939",
+      "cpu_model": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+      "nproc": 2,
+      "mem_mb": 7931,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 3.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup node",
+       "seconds": 7.0
+      },
+      {
+       "name": "Install",
+       "seconds": 4.0
+      },
+      {
+       "name": "Build",
+       "seconds": 11.0
+      },
+      {
+       "name": "Test",
+       "seconds": 93.0
+      },
+      {
+       "name": "Post Setup node",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "round": "warm2",
+   "run_id": 42280546044,
+   "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280546044",
+   "branch": "bench/r2",
+   "created_at": "2026-11-06T19:32:40Z",
+   "jobs": [
+    {
+     "workload": "node",
+     "side": "hosted",
+     "job_id": 128108066918,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280546044/job/128108066918",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010941",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 122.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010941",
+      "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
+      "nproc": 2,
+      "mem_mb": 7931,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup node",
+       "seconds": 9.0
+      },
+      {
+       "name": "Install",
+       "seconds": 4.0
+      },
+      {
+       "name": "Build",
+       "seconds": 10.0
+      },
+      {
+       "name": "Test",
+       "seconds": 89.0
+      },
+      {
+       "name": "Post Setup node",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "node",
+     "side": "self-hosted",
+     "job_id": 128108066991,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280546044/job/128108066991",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-2",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 1.0,
+     "total_s": 121.0,
+     "probe": {
+      "runner": "docker-runners-1-2",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "16G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup node",
+       "seconds": 1.0
+      },
+      {
+       "name": "Install",
+       "seconds": 6.0
+      },
+      {
+       "name": "Build",
+       "seconds": 10.0
+      },
+      {
+       "name": "Test",
+       "seconds": 89.0
+      },
+      {
+       "name": "Post Setup node",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "go",
+     "side": "self-hosted",
+     "job_id": 128108067064,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280546044/job/128108067064",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-4",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 1.0,
+     "total_s": 106.0,
+     "probe": {
+      "runner": "docker-runners-1-4",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "17G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 2.0
+      },
+      {
+       "name": "Setup go",
+       "seconds": 23.0
+      },
+      {
+       "name": "Build",
+       "seconds": 26.0
+      },
+      {
+       "name": "Test",
+       "seconds": 42.0
+      },
+      {
+       "name": "Post Setup go",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "docker",
+     "side": "self-hosted",
+     "job_id": 128108067078,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280546044/job/128108067078",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-1",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 1.0,
+     "total_s": 137.0,
+     "probe": {
+      "runner": "docker-runners-1-1",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "12G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 6.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 5.0
+      },
+      {
+       "name": "Setup buildx",
+       "seconds": 7.0
+      },
+      {
+       "name": "Build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Docker build",
+       "seconds": 109.0
+      },
+      {
+       "name": "Post Docker build",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Setup buildx",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "docker",
+     "side": "hosted",
+     "job_id": 128108067087,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280546044/job/128108067087",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010940",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 141.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010940",
+      "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 3.0
+      },
+      {
+       "name": "Setup buildx",
+       "seconds": 11.0
+      },
+      {
+       "name": "Build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Docker build",
+       "seconds": 113.0
+      },
+      {
+       "name": "Post Docker build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Setup buildx",
+       "seconds": 5.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "go",
+     "side": "hosted",
+     "job_id": 128108067094,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280546044/job/128108067094",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010942",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 71.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010942",
+      "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup go",
+       "seconds": 33.0
+      },
+      {
+       "name": "Build",
+       "seconds": 4.0
+      },
+      {
+       "name": "Test",
+       "seconds": 22.0
+      },
+      {
+       "name": "Post Setup go",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 1.0
+      }
+     ]
+    },
+    {
+     "workload": "rust",
+     "side": "hosted",
+     "job_id": 128108067161,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280546044/job/128108067161",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010943",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 35.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010943",
+      "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 2.0
+      },
+      {
+       "name": "Setup rust",
+       "seconds": 7.0
+      },
+      {
+       "name": "Rust cache",
+       "seconds": 1.0
+      },
+      {
+       "name": "Build",
+       "seconds": 17.0
+      },
+      {
+       "name": "Post Rust cache",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "rust",
+     "side": "self-hosted",
+     "job_id": 128108067247,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42280546044/job/128108067247",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-3",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 1.0,
+     "total_s": 50.0,
+     "probe": {
+      "runner": "docker-runners-1-3",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "12G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 2.0
+      },
+      {
+       "name": "Setup rust",
+       "seconds": 0.0
+      },
+      {
+       "name": "Rust cache",
+       "seconds": 2.0
+      },
+      {
+       "name": "Build",
+       "seconds": 32.0
+      },
+      {
+       "name": "Post Rust cache",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "round": "warm3",
+   "run_id": 42281153835,
+   "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281153835",
+   "branch": "bench/r2",
+   "created_at": "2026-11-06T19:36:42Z",
+   "jobs": [
+    {
+     "workload": "rust",
+     "side": "hosted",
+     "job_id": 128110153188,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281153835/job/128110153188",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010945",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 35.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010945",
+      "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup rust",
+       "seconds": 7.0
+      },
+      {
+       "name": "Rust cache",
+       "seconds": 2.0
+      },
+      {
+       "name": "Build",
+       "seconds": 16.0
+      },
+      {
+       "name": "Post Rust cache",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "rust",
+     "side": "self-hosted",
+     "job_id": 128110153367,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281153835/job/128110153367",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-4",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 1.0,
+     "total_s": 98.0,
+     "probe": {
+      "runner": "docker-runners-1-4",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "17G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 7.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup rust",
+       "seconds": 13.0
+      },
+      {
+       "name": "Rust cache",
+       "seconds": 0.0
+      },
+      {
+       "name": "Build",
+       "seconds": 67.0
+      },
+      {
+       "name": "Post Rust cache",
+       "seconds": 2.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "go",
+     "side": "self-hosted",
+     "job_id": 128110153408,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281153835/job/128110153408",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-3",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 1.0,
+     "total_s": 117.0,
+     "probe": {
+      "runner": "docker-runners-1-3",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "12G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 2.0
+      },
+      {
+       "name": "Setup go",
+       "seconds": 15.0
+      },
+      {
+       "name": "Build",
+       "seconds": 41.0
+      },
+      {
+       "name": "Test",
+       "seconds": 47.0
+      },
+      {
+       "name": "Post Setup go",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "node",
+     "side": "self-hosted",
+     "job_id": 128110153425,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281153835/job/128110153425",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-1",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 1.0,
+     "total_s": 134.0,
+     "probe": {
+      "runner": "docker-runners-1-1",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "12G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 2.0
+      },
+      {
+       "name": "Setup node",
+       "seconds": 2.0
+      },
+      {
+       "name": "Install",
+       "seconds": 7.0
+      },
+      {
+       "name": "Build",
+       "seconds": 15.0
+      },
+      {
+       "name": "Test",
+       "seconds": 94.0
+      },
+      {
+       "name": "Post Setup node",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "go",
+     "side": "hosted",
+     "job_id": 128110153601,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281153835/job/128110153601",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010944",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 65.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010944",
+      "cpu_model": "Intel(R) Xeon(R) 6975P-C",
+      "nproc": 2,
+      "mem_mb": 7776,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "17G",
+      "kernel": "7.0.0-1014-aws",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 6.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 6.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup go",
+       "seconds": 24.0
+      },
+      {
+       "name": "Build",
+       "seconds": 3.0
+      },
+      {
+       "name": "Test",
+       "seconds": 20.0
+      },
+      {
+       "name": "Post Setup go",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "docker",
+     "side": "self-hosted",
+     "job_id": 128110153631,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281153835/job/128110153631",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-2",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 2.0,
+     "total_s": 127.0,
+     "probe": {
+      "runner": "docker-runners-1-2",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "16G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 3.0
+      },
+      {
+       "name": "Setup buildx",
+       "seconds": 3.0
+      },
+      {
+       "name": "Build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Docker build",
+       "seconds": 107.0
+      },
+      {
+       "name": "Post Docker build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Setup buildx",
+       "seconds": 2.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "node",
+     "side": "hosted",
+     "job_id": 128110153634,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281153835/job/128110153634",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010946",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 1.0,
+     "total_s": 125.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010946",
+      "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
+      "nproc": 2,
+      "mem_mb": 7931,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup node",
+       "seconds": 10.0
+      },
+      {
+       "name": "Install",
+       "seconds": 4.0
+      },
+      {
+       "name": "Build",
+       "seconds": 10.0
+      },
+      {
+       "name": "Test",
+       "seconds": 89.0
+      },
+      {
+       "name": "Post Setup node",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "docker",
+     "side": "hosted",
+     "job_id": 128110153653,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281153835/job/128110153653",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010947",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 162.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010947",
+      "cpu_model": "AMD EPYC 7763 64-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7936,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 2.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 3.0
+      },
+      {
+       "name": "Setup buildx",
+       "seconds": 7.0
+      },
+      {
+       "name": "Build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Docker build",
+       "seconds": 139.0
+      },
+      {
+       "name": "Post Docker build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Setup buildx",
+       "seconds": 6.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "round": "serial1",
+   "run_id": 42281598441,
+   "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281598441",
+   "branch": "bench/r2",
+   "created_at": "2026-11-06T19:39:52Z",
+   "jobs": [
+    {
+     "workload": "go",
+     "side": "self-hosted",
+     "job_id": 128111709231,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281598441/job/128111709231",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-4",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 475.0,
+     "total_s": 52.0,
+     "probe": {
+      "runner": "docker-runners-1-4",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "16G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 5.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup go",
+       "seconds": 13.0
+      },
+      {
+       "name": "Build",
+       "seconds": 4.0
+      },
+      {
+       "name": "Test",
+       "seconds": 21.0
+      },
+      {
+       "name": "Post Setup go",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "docker",
+     "side": "hosted",
+     "job_id": 128111709540,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281598441/job/128111709540",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010951",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 236.0,
+     "total_s": 119.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010951",
+      "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 2.0
+      },
+      {
+       "name": "Setup buildx",
+       "seconds": 10.0
+      },
+      {
+       "name": "Build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Docker build",
+       "seconds": 95.0
+      },
+      {
+       "name": "Post Docker build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Setup buildx",
+       "seconds": 5.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "node",
+     "side": "hosted",
+     "job_id": 128111709572,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281598441/job/128111709572",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010948",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 2.0,
+     "total_s": 119.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010948",
+      "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 2.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup node",
+       "seconds": 7.0
+      },
+      {
+       "name": "Install",
+       "seconds": 3.0
+      },
+      {
+       "name": "Build",
+       "seconds": 8.0
+      },
+      {
+       "name": "Test",
+       "seconds": 91.0
+      },
+      {
+       "name": "Post Setup node",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "rust",
+     "side": "self-hosted",
+     "job_id": 128111709609,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281598441/job/128111709609",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-3",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 528.0,
+     "total_s": 31.0,
+     "probe": {
+      "runner": "docker-runners-1-3",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "12G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup rust",
+       "seconds": 0.0
+      },
+      {
+       "name": "Rust cache",
+       "seconds": 1.0
+      },
+      {
+       "name": "Build",
+       "seconds": 17.0
+      },
+      {
+       "name": "Post Rust cache",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "node",
+     "side": "self-hosted",
+     "job_id": 128111709696,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281598441/job/128111709696",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-4",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 357.0,
+     "total_s": 116.0,
+     "probe": {
+      "runner": "docker-runners-1-4",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "16G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup node",
+       "seconds": 1.0
+      },
+      {
+       "name": "Install",
+       "seconds": 3.0
+      },
+      {
+       "name": "Build",
+       "seconds": 8.0
+      },
+      {
+       "name": "Test",
+       "seconds": 90.0
+      },
+      {
+       "name": "Post Setup node",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "go",
+     "side": "hosted",
+     "job_id": 128111709698,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281598441/job/128111709698",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010949",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 123.0,
+     "total_s": 72.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010949",
+      "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 2.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup go",
+       "seconds": 32.0
+      },
+      {
+       "name": "Build",
+       "seconds": 3.0
+      },
+      {
+       "name": "Test",
+       "seconds": 26.0
+      },
+      {
+       "name": "Post Setup go",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "docker",
+     "side": "self-hosted",
+     "job_id": 128111709713,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281598441/job/128111709713",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-1",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 561.0,
+     "total_s": 107.0,
+     "probe": {
+      "runner": "docker-runners-1-1",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "12G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 3.0
+      },
+      {
+       "name": "Setup buildx",
+       "seconds": 2.0
+      },
+      {
+       "name": "Build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Docker build",
+       "seconds": 83.0
+      },
+      {
+       "name": "Post Docker build",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Setup buildx",
+       "seconds": 2.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "rust",
+     "side": "hosted",
+     "job_id": 128111709719,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42281598441/job/128111709719",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010950",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 196.0,
+     "total_s": 38.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010950",
+      "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup rust",
+       "seconds": 8.0
+      },
+      {
+       "name": "Rust cache",
+       "seconds": 2.0
+      },
+      {
+       "name": "Build",
+       "seconds": 18.0
+      },
+      {
+       "name": "Post Rust cache",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "round": "serial2",
+   "run_id": 42283262150,
+   "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42283262150",
+   "branch": "bench/r2",
+   "created_at": "2026-11-06T19:51:13Z",
+   "jobs": [
+    {
+     "workload": "go",
+     "side": "self-hosted",
+     "job_id": 128117457992,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42283262150/job/128117457992",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-4",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 487.0,
+     "total_s": 47.0,
+     "probe": {
+      "runner": "docker-runners-1-4",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "16G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup go",
+       "seconds": 11.0
+      },
+      {
+       "name": "Build",
+       "seconds": 4.0
+      },
+      {
+       "name": "Test",
+       "seconds": 20.0
+      },
+      {
+       "name": "Post Setup go",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "node",
+     "side": "hosted",
+     "job_id": 128117458458,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42283262150/job/128117458458",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010952",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 1.0,
+     "total_s": 121.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010952",
+      "cpu_model": "INTEL(R) XEON(R) PLATINUM 8573C",
+      "nproc": 2,
+      "mem_mb": 7931,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 3.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup node",
+       "seconds": 7.0
+      },
+      {
+       "name": "Install",
+       "seconds": 4.0
+      },
+      {
+       "name": "Build",
+       "seconds": 10.0
+      },
+      {
+       "name": "Test",
+       "seconds": 89.0
+      },
+      {
+       "name": "Post Setup node",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "node",
+     "side": "self-hosted",
+     "job_id": 128117458461,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42283262150/job/128117458461",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-2",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 372.0,
+     "total_s": 113.0,
+     "probe": {
+      "runner": "docker-runners-1-2",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "16G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup node",
+       "seconds": 1.0
+      },
+      {
+       "name": "Install",
+       "seconds": 3.0
+      },
+      {
+       "name": "Build",
+       "seconds": 7.0
+      },
+      {
+       "name": "Test",
+       "seconds": 88.0
+      },
+      {
+       "name": "Post Setup node",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "go",
+     "side": "hosted",
+     "job_id": 128117458479,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42283262150/job/128117458479",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010953",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 124.0,
+     "total_s": 61.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010953",
+      "cpu_model": "AMD EPYC 9V45 96-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 2.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Setup go",
+       "seconds": 28.0
+      },
+      {
+       "name": "Build",
+       "seconds": 3.0
+      },
+      {
+       "name": "Test",
+       "seconds": 20.0
+      },
+      {
+       "name": "Post Setup go",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "docker",
+     "side": "hosted",
+     "job_id": 128117458490,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42283262150/job/128117458490",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010955",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 233.0,
+     "total_s": 137.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010955",
+      "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 2.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 3.0
+      },
+      {
+       "name": "Setup buildx",
+       "seconds": 10.0
+      },
+      {
+       "name": "Build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Docker build",
+       "seconds": 113.0
+      },
+      {
+       "name": "Post Docker build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Setup buildx",
+       "seconds": 4.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 1.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "docker",
+     "side": "self-hosted",
+     "job_id": 128117458547,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42283262150/job/128117458547",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-3",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 569.0,
+     "total_s": 103.0,
+     "probe": {
+      "runner": "docker-runners-1-3",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "12G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 4.0
+      },
+      {
+       "name": "Setup buildx",
+       "seconds": 2.0
+      },
+      {
+       "name": "Build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Docker build",
+       "seconds": 84.0
+      },
+      {
+       "name": "Post Docker build",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Setup buildx",
+       "seconds": 2.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "rust",
+     "side": "hosted",
+     "job_id": 128117458588,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42283262150/job/128117458588",
+     "conclusion": "success",
+     "runner_name": "GitHub Actions 1000010954",
+     "labels": [
+      "ubuntu-latest"
+     ],
+     "queue_s": 187.0,
+     "total_s": 45.0,
+     "probe": {
+      "runner": "GitHub Actions 1000010954",
+      "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+      "nproc": 2,
+      "mem_mb": 7932,
+      "cgroup_cpu_max": "",
+      "cgroup_mem_max": "",
+      "gomaxprocs": "",
+      "disk_free": "14G",
+      "kernel": "7.0.0-1017-azure",
+      "git_cache": false
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 3.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 2.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 2.0
+      },
+      {
+       "name": "Setup rust",
+       "seconds": 9.0
+      },
+      {
+       "name": "Rust cache",
+       "seconds": 2.0
+      },
+      {
+       "name": "Build",
+       "seconds": 23.0
+      },
+      {
+       "name": "Post Rust cache",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    },
+    {
+     "workload": "rust",
+     "side": "self-hosted",
+     "job_id": 128117458653,
+     "url": "https://github.com/Quavon-dev/runner-benchmark/actions/runs/42283262150/job/128117458653",
+     "conclusion": "success",
+     "runner_name": "docker-runners-1-3",
+     "labels": [
+      "self-hosted",
+      "fullplus-host-1"
+     ],
+     "queue_s": 536.0,
+     "total_s": 31.0,
+     "probe": {
+      "runner": "docker-runners-1-3",
+      "cpu_model": "AMD Ryzen 5 PRO 4650G with Radeon Graphics",
+      "nproc": 2,
+      "mem_mb": 63604,
+      "cgroup_cpu_max": "200000 100000",
+      "cgroup_mem_max": "4294967296",
+      "gomaxprocs": "2",
+      "disk_free": "12G",
+      "kernel": "7.0.14-19-pve",
+      "git_cache": true
+     },
+     "steps": [
+      {
+       "name": "Set up job",
+       "seconds": 4.0
+      },
+      {
+       "name": "Set up runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Probe",
+       "seconds": 1.0
+      },
+      {
+       "name": "Checkout (own repository)",
+       "seconds": 0.0
+      },
+      {
+       "name": "Checkout workload",
+       "seconds": 2.0
+      },
+      {
+       "name": "Setup rust",
+       "seconds": 0.0
+      },
+      {
+       "name": "Rust cache",
+       "seconds": 1.0
+      },
+      {
+       "name": "Build",
+       "seconds": 17.0
+      },
+      {
+       "name": "Post Rust cache",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout workload",
+       "seconds": 0.0
+      },
+      {
+       "name": "Post Checkout (own repository)",
+       "seconds": 1.0
+      },
+      {
+       "name": "Complete runner",
+       "seconds": 0.0
+      },
+      {
+       "name": "Complete job",
+       "seconds": 0.0
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

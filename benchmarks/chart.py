@@ -11,7 +11,12 @@ TARGET = ROOT.parent / "docs" / "assets" / "benchmark.svg"
 FONT = "Outfit, Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
 SURFACE, BORDER, GRID = "#0A0A0A", "#242424", "#1C1C1C"
 TEXT, MUTED, FAINT = "#FFFFFF", "#B2B2B2", "#878787"
-SIDES = [("hosted", "GitHub-hosted", "#5B8DEF"), ("self-hosted", "Self-hosted", "#00A88A")]
+MAIN, BEFORE = "r2", "r1"
+BARS = [
+    ("hosted", MAIN, "GitHub-hosted", "#5B8DEF", 1),
+    ("self-hosted", MAIN, "Self-hosted", "#00A88A", 1),
+    ("self-hosted", BEFORE, "Self-hosted, round 1", "#00A88A", 0.35),
+]
 ROUNDS = [
     ("cold", "Cold", "empty caches"),
     ("warm", "Warm, all jobs in parallel", "median of 3"),
@@ -35,33 +40,34 @@ def nice_max(value):
 
 
 def render(summary):
-    workloads = summary["workloads"]
+    rounds = {name: data["workloads"] for name, data in summary["rounds"].items()}
+    date = summary["rounds"][MAIN]["date"]
     peak = max(
         stats["max_s"]
-        for entry in workloads.values()
-        for side, _, _ in SIDES
+        for side, name, _, _, _ in BARS
+        for entry in rounds[name].values()
         for stats in entry.get(side, {}).values()
     )
     scale_max = nice_max(peak)
     panel_w = (WIDTH - 2 * PAD - LABEL_W - PANEL_GAP * (len(ROUNDS) - 1)) / len(ROUNDS)
-    row_h = 2 * BAR_H + BAR_GAP + ROW_GAP
+    row_h = len(BARS) * (BAR_H + BAR_GAP) - BAR_GAP + ROW_GAP
     plot_h = row_h * len(WORKLOADS) - ROW_GAP
     height = TOP + plot_h + 96
 
     out = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{height}" '
         f'viewBox="0 0 {WIDTH} {height}" font-family="{escape(FONT)}" role="img">',
-        f"<title>Benchmark {escape(summary.get('date') or '')}: job time of GitHub-hosted and "
-        "self-hosted runners in seconds, lower is better</title>",
+        f"<title>Benchmark round 2, {escape(date)}: job time of GitHub-hosted and "
+        "self-hosted runners in seconds, lower is better, with self-hosted round 1 for comparison</title>",
         f'<rect x="0.5" y="0.5" width="{WIDTH - 1}" height="{height - 1}" rx="16" fill="{SURFACE}" stroke="{BORDER}"/>',
         text(PAD, 46, "Job time in seconds, lower is better", 20, TEXT, 700),
-        text(PAD, 70, f"Measured {summary.get('date')} on 2 vCPU per job. Self-hosted: one 6-core Ryzen 5 PRO 4650G "
-             "shared by 4 runners, before the Go module cache and shared tool cache fixes.", 13, MUTED),
+        text(PAD, 70, f"Round 2, measured {date} on 2 vCPU per job. Self-hosted: one 6-core Ryzen 5 PRO 4650G "
+             "shared by 4 runners. Faded: self-hosted in round 1, before the cache fixes.", 13, MUTED),
     ]
 
     legend_x = PAD
-    for _, label, color in SIDES:
-        out.append(f'<rect x="{legend_x}" y="86" width="12" height="12" rx="3" fill="{color}"/>')
+    for _, _, label, color, opacity in BARS:
+        out.append(f'<rect x="{legend_x}" y="86" width="12" height="12" rx="3" fill="{color}" fill-opacity="{opacity}"/>')
         out.append(text(legend_x + 18, 97, label, 13, MUTED))
         legend_x += 18 + len(label) * 7.5 + 24
 
@@ -75,10 +81,9 @@ def render(summary):
             out.append(text(tx, TOP + plot_h + 26, f"{tick} s", 11, FAINT, 400, "middle"))
 
         for row, (workload, _) in enumerate(WORKLOADS):
-            entry = workloads.get(workload, {})
-            for slot, (side, label, color) in enumerate(SIDES):
+            for slot, (side, name, label, color, opacity) in enumerate(BARS):
                 y = TOP + 8 + row * row_h + slot * (BAR_H + BAR_GAP)
-                stats = entry.get(side, {}).get(round_key)
+                stats = rounds[name].get(workload, {}).get(side, {}).get(round_key)
                 if not stats:
                     out.append(text(x0 + 4, y + BAR_H - 3, "failed, see notes", 11, FAINT))
                     continue
@@ -86,18 +91,18 @@ def render(summary):
                 tip = (f"{label}, {workload}, {round_key}: median {stats['median_s']:g} s "
                        f"(min {stats['min_s']:g}, max {stats['max_s']:g}, n={stats['n']})")
                 out.append(f'<rect x="{x0:.1f}" y="{y:.1f}" width="{w:.1f}" height="{BAR_H}" rx="4" '
-                           f'fill="{color}"><title>{escape(tip)}</title></rect>')
+                           f'fill="{color}" fill-opacity="{opacity}"><title>{escape(tip)}</title></rect>')
                 if stats["n"] > 1:
                     lo = x0 + panel_w * stats["min_s"] / scale_max
                     hi = x0 + panel_w * stats["max_s"] / scale_max
                     mid = y + BAR_H / 2
                     out.append(f'<line x1="{lo:.1f}" y1="{mid:.1f}" x2="{hi:.1f}" y2="{mid:.1f}" '
-                               f'stroke="{TEXT}" stroke-opacity="0.55" stroke-width="2"/>')
+                               f'stroke="{TEXT}" stroke-opacity="{0.55 * opacity:.2f}" stroke-width="2"/>')
                 label_x = max(x0 + w, x0 + panel_w * stats["max_s"] / scale_max) + 6
-                out.append(text(label_x, y + BAR_H - 2.5, f"{stats['median_s']:g}", 11, MUTED))
+                out.append(text(label_x, y + BAR_H - 2.5, f"{stats['median_s']:g}", 11, MUTED if opacity == 1 else FAINT))
 
     for row, (_, name) in enumerate(WORKLOADS):
-        y = TOP + 8 + row * row_h + BAR_H + BAR_GAP / 2 + 5
+        y = TOP + 8 + row * row_h + (len(BARS) * (BAR_H + BAR_GAP) - BAR_GAP) / 2 + 5
         out.append(text(PAD, y, name, 14, TEXT, 600))
 
     out.append(text(PAD, height - 26, "Bars: median. Thin line: min to max. Source: benchmarks/summary.json, "
