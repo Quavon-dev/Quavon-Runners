@@ -1,0 +1,43 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions: {}
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build release files
+        run: |
+          mkdir dist
+          git archive --format=tar.gz --prefix="Quavon-Runners-${TAG}/" -o "dist/Quavon-Runners-${TAG}.tar.gz" "$TAG"
+          sed "s|REPO_BRANCH=\"\${REPO_BRANCH:-main}\"|REPO_BRANCH=\"\${REPO_BRANCH:-${TAG}}\"|" install.sh >dist/install.sh
+          grep -q "REPO_BRANCH:-${TAG}" dist/install.sh
+          (cd dist && sha256sum ./* >SHA256SUMS)
+
+      - id: attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/*
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+        run: |
+          cp "$BUNDLE" dist/provenance.sigstore.json
+          gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes --verify-tag

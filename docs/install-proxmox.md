@@ -13,6 +13,18 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/Quavon-dev/Quavon-Runner
 No Proxmox? The same runners install on any Debian/Ubuntu VM or server with `_ host`:
 see [Install on Debian or Ubuntu](install-linux.md).
 
+## A fixed version
+
+Every [release](https://github.com/Quavon-dev/Quavon-Runners/releases) has its own
+`install.sh` that installs exactly that version instead of `main`. The release also holds
+`SHA256SUMS` and a signed build provenance:
+
+```bash
+curl -fsSLO https://github.com/Quavon-dev/Quavon-Runners/releases/download/v0.1.0/install.sh
+gh attestation verify install.sh --repo Quavon-dev/Quavon-Runners
+bash install.sh
+```
+
 ## The wizard
 
 The wizard asks for:
