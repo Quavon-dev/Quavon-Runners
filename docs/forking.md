@@ -3,8 +3,8 @@
 Install from your fork by pointing `install.sh` at it:
 
 ```bash
-REPO_URL=https://github.com/<you>/quavon-docker-runners.git REPO_BRANCH=main \
-  bash -c "$(curl -fsSL https://raw.githubusercontent.com/<you>/quavon-docker-runners/main/install.sh)"
+REPO_URL=https://github.com/<you>/Quavon-Runners.git REPO_BRANCH=main \
+  bash -c "$(curl -fsSL https://raw.githubusercontent.com/<you>/Quavon-Runners/main/install.sh)"
 ```
 
 Runner images come from `PREBUILT_IMAGE` in `/etc/gha-runners/config.env` inside the LXC (default `ghcr.io/quavon-dev/gha-runner`). A prebuilt image is only used when its tag matches the git tree hash of your `image/` directory, so a modified `image/` is built locally anyway.

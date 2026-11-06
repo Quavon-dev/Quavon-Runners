@@ -1,4 +1,4 @@
-# Quick start without Proxmox
+# Install on Debian or Ubuntu
 
 The runners don't need Proxmox. On a plain Debian or Ubuntu machine (a VM, a cloud
 server or bare metal) the installer sets up Docker, the `gha-runners` CLI, the
@@ -28,7 +28,7 @@ puts inside a runner LXC on Proxmox.
 ## Install
 
 ```bash
-sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/quavon-dev/quavon-docker-runners/main/install.sh)" _ host
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/Quavon-dev/Quavon-Runners/main/install.sh)" _ host
 ```
 
 The wizard asks for the same things as on Proxmox: the pair code (the
@@ -49,13 +49,13 @@ On a Proxmox VE host, `_ host` refuses to run. Use the normal installer there.
 sudo NONINTERACTIVE=1 \
   GH_URL=https://github.com/my-org GH_TOKEN=AAAA... \
   RUNNER_COUNT=2 SIZE=medium RUNNER_FLAVOR=standard RUNNER_LABELS=docker \
-  bash -c "$(curl -fsSL https://raw.githubusercontent.com/quavon-dev/quavon-docker-runners/main/install.sh)" _ host
+  bash -c "$(curl -fsSL https://raw.githubusercontent.com/Quavon-dev/Quavon-Runners/main/install.sh)" _ host
 ```
 
 | Variable | Default | |
 |---|---|---|
 | `GH_URL`, `GH_TOKEN` | | repo, org or enterprise URL and its registration token |
-| `RUNNER_MODE=ephemeral`, `GH_PAT` | `persistent` | ephemeral runners need a PAT ([README](../README.md#persistent-vs-ephemeral)) |
+| `RUNNER_MODE=ephemeral`, `GH_PAT` | `persistent` | ephemeral runners need a PAT ([Persistent vs. ephemeral](install-proxmox.md#persistent-vs-ephemeral)) |
 | `RUNNER_COUNT` | `2` | jobs at the same time (1-32) |
 | `SIZE` | `medium` | `small`, `medium`, `large`, `xlarge`, or `custom` with `RUNNER_CPUS` / `RUNNER_MEM` (MB) |
 | `RUNNER_FLAVOR` | `standard` | `standard`, `full`, `full-plus` |
@@ -81,7 +81,7 @@ ends up in its history: type ` GH_TOKEN=...` with a leading space, or use the wi
   *inside* the VM doesn't help: jobs are root there and can change it.
 - The caches (actions cache, Docker Hub mirror, package and Git caches) are shared
   by every job on the machine, across repositories. Only attach repositories that
-  trust each other ([README › Security](../README.md#security)).
+  trust each other ([Security model](security.md)).
 
 ## Docker with other workloads
 
@@ -94,7 +94,7 @@ So the installer stops if Docker already has containers or volumes, unless you
 confirm (or set `SHARED_DOCKER=1`). With `SHARED_DOCKER=1` in
 `/etc/gha-runners/config.env`:
 
-- running containers are never removed (no [leftover container](../README.md#leftover-containers) cleanup),
+- running containers are never removed (no [leftover container](operations.md#leftover-containers) cleanup),
 - `gha-runners update` doesn't switch Docker to the classic image store, because that
   deletes every image and container,
 - Docker keeps its image store. The installer only adds the build cache limit and

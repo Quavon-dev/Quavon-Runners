@@ -8,5 +8,5 @@
 
 ## Checklist
 
-- [ ] README updated for user-facing changes
+- [ ] Docs (README.md or docs/) updated for user-facing changes
 - [ ] No secrets, tokens or credentials in the diff

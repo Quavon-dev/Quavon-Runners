@@ -161,4 +161,4 @@ Run in [Quavon-dev/runner-benchmark](https://github.com/Quavon-dev/runner-benchm
 - The second serial round was slower than the first on every self-hosted job without a visible
   cause.
 - The Rust toolchain stays installed in a persistent runner container, which helps later jobs on
-  the same runner; it is not one of the caches described in the main README.
+  the same runner; it is not one of the caches described in [docs/caching.md](../docs/caching.md).

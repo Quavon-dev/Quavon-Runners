@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: Report a security vulnerability
-    url: https://github.com/Quavon-dev/quavon-docker-runners/security/advisories/new
+    url: https://github.com/Quavon-dev/Quavon-Runners/security/advisories/new
     about: Please report security issues privately, not as a public issue.
