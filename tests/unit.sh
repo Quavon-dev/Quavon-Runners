@@ -88,26 +88,35 @@ ok() { if eval "$2"; then pass=$((pass + 1)); else echo "FAIL $1"; fail=1; fi; }
 
 t "image size full-plus" "$(image_gb full-plus)" "15"
 t "image size standard"  "$(image_gb standard)" "3"
-ok "actions cache on by default" 'cache_enabled actions && cache_enabled mirror'
-ok "caches switch off"   '! LOCAL_ACTIONS_CACHE=0 cache_enabled actions && ! DOCKER_HUB_MIRROR=0 cache_enabled mirror'
+ok "caches on by default" '(for s in $CACHE_SERVICES; do cache_enabled "$s" || exit 1; done)'
+ok "caches switch off"   '! LOCAL_ACTIONS_CACHE=0 cache_enabled actions && ! DOCKER_HUB_MIRROR=0 cache_enabled mirror && ! APT_PROXY=0 cache_enabled apt && ! GHCR_MIRROR=0 cache_enabled ghcr && ! QUAY_MIRROR=0 cache_enabled quay && ! MCR_MIRROR=0 cache_enabled mcr'
+ok "every cache has its own port" '[[ $(for s in $CACHE_SERVICES; do cache_port "$s"; done | sort -u | wc -l) == $(wc -w <<<"$CACHE_SERVICES") ]]'
 
 # prebuilt image: only for a clean image/ tree of a git checkout
 repo="$(mktemp -d)"; mkdir -p "$repo/image"; echo a >"$repo/image/f"
 git -C "$repo" init -q && git -C "$repo" add . && git -C "$repo" -c user.email=t@t -c user.name=t commit -qm i
-docker() { echo "docker $*" >>/tmp/docker-calls; }
+docker() { echo "docker $*" >>/tmp/docker-calls; [[ "$*" != "pull --platform linux/amd64 172.17.0.1:29174/"*"$mirror_fails" ]]; }
 info() { :; }
 dpkg() { echo amd64; }
+bridge_ip() { echo 172.17.0.1; }
+tree="$(git -C "$repo" rev-parse HEAD:image)" mirror_fails=never
 : >/tmp/docker-calls
 REPO_DIR="$repo" pull_image full quavon/gha-runner:full
-ok "prebuilt pulled by tree hash" 'grep -qx "docker pull --platform linux/amd64 ghcr.io/quavon-dev/gha-runner:full-$(git -C "$repo" rev-parse HEAD:image)" /tmp/docker-calls'
-ok "prebuilt retagged locally" 'grep -q "docker tag ghcr.io/quavon-dev/gha-runner:full-.* quavon/gha-runner:full" /tmp/docker-calls'
+ok "prebuilt pulled by tree hash through the ghcr mirror" 'grep -qx "docker pull --platform linux/amd64 172.17.0.1:29174/quavon-dev/gha-runner:full-$tree" /tmp/docker-calls && ! grep -q "pull .* ghcr.io" /tmp/docker-calls'
+ok "prebuilt retagged locally" 'grep -qx "docker tag 172.17.0.1:29174/quavon-dev/gha-runner:full-$tree ghcr.io/quavon-dev/gha-runner:full-$tree" /tmp/docker-calls && grep -q "docker tag ghcr.io/quavon-dev/gha-runner:full-.* quavon/gha-runner:full" /tmp/docker-calls'
+mirror_fails="" ; : >/tmp/docker-calls
+REPO_DIR="$repo" pull_image full quavon/gha-runner:full
+ok "mirror fails: pulled from GHCR directly" 'grep -qx "docker pull --platform linux/amd64 ghcr.io/quavon-dev/gha-runner:full-$tree" /tmp/docker-calls'
+mirror_fails=never; : >/tmp/docker-calls
+GHCR_MIRROR=0 REPO_DIR="$repo" pull_image full quavon/gha-runner:full
+ok "GHCR_MIRROR=0 pulls from GHCR directly" '! grep -q 29174 /tmp/docker-calls && grep -qx "docker pull --platform linux/amd64 ghcr.io/quavon-dev/gha-runner:full-$tree" /tmp/docker-calls'
 echo b >"$repo/image/f"; : >/tmp/docker-calls
 ok "local changes build locally" '! REPO_DIR="$repo" pull_image full quavon/gha-runner:full && [[ ! -s /tmp/docker-calls ]]'
 ok "PREBUILT_IMAGE= turns pulling off" '! PREBUILT_IMAGE= REPO_DIR="$repo" pull_image full x'
 ok "no git checkout builds locally" '! REPO_DIR=/tmp pull_image full x'
 dpkg() { echo arm64; }; : >/tmp/docker-calls
 ok "other architectures build locally" '! REPO_DIR="$repo" pull_image full x && [[ ! -s /tmp/docker-calls ]]'
-unset -f docker info dpkg
+unset -f docker info dpkg bridge_ip
 rm -rf "$repo"
 
 # runner patch: ACTIONS_RESULTS_URL (UTF-16) renamed so the runner keeps ours

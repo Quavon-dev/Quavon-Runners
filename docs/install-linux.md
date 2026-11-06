@@ -79,9 +79,11 @@ ends up in its history: type ` GH_TOKEN=...` with a leading space, or use the wi
   private ranges with a firewall in front of it or on the hypervisor (security
   groups, the Proxmox/Hyper-V/VMware firewall, nftables on another host). A firewall
   *inside* the VM doesn't help: jobs are root there and can change it.
-- The caches (actions cache, Docker Hub mirror, package and Git caches) are shared
-  by every job on the machine, across repositories. Only attach repositories that
-  trust each other ([Security model](security.md)).
+- The caches (actions cache, registry mirrors, apt proxy, package and Git caches) are
+  shared by every job on the machine, across repositories. Only attach repositories
+  that trust each other ([Security model](security.md)). The cache servers listen only
+  on Docker's bridge address (`172.17.0.1`), never on `0.0.0.0`; they are still
+  reachable from hosts that route `172.17.0.0/16` to the machine.
 
 ## Docker with other workloads
 

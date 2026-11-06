@@ -2,5 +2,5 @@
 useDefault = true
 
 [allowlist]
-description = "Public GPG key fingerprint of the AWS CLI release signature"
-regexes = ['''FB5DB77FD5C118B80511ADA8A6310ACC4672475C''']
+description = "Public AWS CLI signing fingerprint; dummy registry credentials (itest:secret) in an old test commit"
+regexes = ['''FB5DB77FD5C118B80511ADA8A6310ACC4672475C''', '''aXRlc3Q6c2VjcmV0''']

@@ -77,4 +77,5 @@ off, add `RUNNER_IO_URING=0` to `/etc/gha-runners/config.env` and run `gha-runne
 The runner images bundle third-party software (Ubuntu packages, language toolchains,
 browsers, cloud CLIs, the GitHub Actions runner) under their own licenses. The cache
 server ([github-actions-cache-server](https://github.com/falcondev-oss/github-actions-cache-server),
-MIT) and the Docker Hub mirror (`registry`, Apache-2.0) run as their unmodified upstream images.
+MIT), the registry mirrors (`registry`, Apache-2.0) and the apt proxy (`nginx`, BSD-2-Clause)
+run as their unmodified upstream images.

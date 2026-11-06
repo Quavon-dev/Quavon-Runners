@@ -39,6 +39,14 @@ unset RUNNER_TOKEN
 
 [[ -f .runner ]] || die "runner is not registered - run 'gha-runners add' on the LXC"
 
+# New buildx builders (docker-container driver) pull through the LXC's mirrors.
+if [[ -n "${GHA_REGISTRY_MIRRORS:-}" ]]; then
+  mkdir -p ~/.docker/buildx
+  for mirror in $GHA_REGISTRY_MIRRORS; do
+    printf '[registry."%s"]\n  mirrors = ["%s"]\n[registry."%s"]\n  http = true\n' "${mirror%%=*}" "${mirror#*=}" "${mirror#*=}"
+  done >~/.docker/buildx/buildkitd.default.toml
+fi
+
 # Re-capture PATH and toolchain vars from *this* image for job steps.
 rm -f .env .path
 ./env.sh >/dev/null

@@ -25,7 +25,7 @@ An open-source product of [quavon.de](https://quavon.de).
 | ⚡ **One-line install** | wizard for repo, org or enterprise runners; [non-interactive](docs/install-proxmox.md#non-interactive-install) too |
 | 🐳 **Docker in jobs** | `docker build/run`, `services:`, `container:` jobs, buildx, compose, `services:` ports on `localhost` |
 | 🧰 **Hosted-runner parity** | user `runner` with `sudo`, `/opt/hostedtoolcache`, `actions/setup-*`; [three image flavors](docs/images.md) |
-| 📦 **Local caches** | `actions/cache` and `type=gha`, Docker Hub mirror, package and tool caches, Git checkout cache, [shared across LXCs](docs/caching.md) |
+| 📦 **Local caches** | `actions/cache` and `type=gha`, registry and apt mirrors, package and tool caches, Git checkout cache, [shared across LXCs](docs/caching.md) |
 | 🛡️ **Isolated** | Proxmox firewall keeps jobs off your LAN, host and IPv6; [security model](docs/security.md) |
 | 🧹 **Self-cleaning** | workspaces wiped, leftover containers removed, disk reserve so a full disk [never takes the runners down](docs/operations.md#full-disk) |
 | 🔁 **Persistent or ephemeral** | keep the container between jobs, or a fresh one for every job |
@@ -37,7 +37,7 @@ An open-source product of [quavon.de](https://quavon.de).
 </p>
 
 Every runner LXC runs one container per runner. The caches live next to them. With
-several LXCs, one serves the Actions cache and the Docker Hub mirror and the others
+several LXCs, one serves the Actions cache and the mirrors and the others
 forward to it over a Unix socket in a shared cache directory on the host
 ([details](docs/caching.md#one-cache-for-several-lxcs)).
 
