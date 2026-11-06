@@ -1,107 +1,141 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="422" viewBox="0 0 1200 422" font-family="Outfit, Inter, -apple-system, BlinkMacSystemFont, &#x27;Segoe UI&#x27;, Helvetica, Arial, sans-serif" role="img">
-<title>Benchmark 2026-11-06: job time of GitHub-hosted and self-hosted runners in seconds, lower is better</title>
-<rect x="0.5" y="0.5" width="1199" height="421" rx="16" fill="#0A0A0A" stroke="#242424"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="494" viewBox="0 0 1200 494" font-family="Outfit, Inter, -apple-system, BlinkMacSystemFont, &#x27;Segoe UI&#x27;, Helvetica, Arial, sans-serif" role="img">
+<title>Benchmark round 2, 2026-11-06: job time of GitHub-hosted and self-hosted runners in seconds, lower is better, with self-hosted round 1 for comparison</title>
+<rect x="0.5" y="0.5" width="1199" height="493" rx="16" fill="#0A0A0A" stroke="#242424"/>
 <text x="32.0" y="46.0" font-size="20" font-weight="700" fill="#FFFFFF" text-anchor="start">Job time in seconds, lower is better</text>
-<text x="32.0" y="70.0" font-size="13" font-weight="400" fill="#B2B2B2" text-anchor="start">Measured 2026-11-06 on 2 vCPU per job. Self-hosted: one 6-core Ryzen 5 PRO 4650G shared by 4 runners, before the Go module cache and shared tool cache fixes.</text>
-<rect x="32" y="86" width="12" height="12" rx="3" fill="#5B8DEF"/>
+<text x="32.0" y="70.0" font-size="13" font-weight="400" fill="#B2B2B2" text-anchor="start">Round 2, measured 2026-11-06 on 2 vCPU per job. Self-hosted: one 6-core Ryzen 5 PRO 4650G shared by 4 runners. Faded: self-hosted in round 1, before the cache fixes.</text>
+<rect x="32" y="86" width="12" height="12" rx="3" fill="#5B8DEF" fill-opacity="1"/>
 <text x="50.0" y="97.0" font-size="13" font-weight="400" fill="#B2B2B2" text-anchor="start">GitHub-hosted</text>
-<rect x="171.5" y="86" width="12" height="12" rx="3" fill="#00A88A"/>
+<rect x="171.5" y="86" width="12" height="12" rx="3" fill="#00A88A" fill-opacity="1"/>
 <text x="189.5" y="97.0" font-size="13" font-weight="400" fill="#B2B2B2" text-anchor="start">Self-hosted</text>
+<rect x="296.0" y="86" width="12" height="12" rx="3" fill="#00A88A" fill-opacity="0.35"/>
+<text x="314.0" y="97.0" font-size="13" font-weight="400" fill="#B2B2B2" text-anchor="start">Self-hosted, round 1</text>
 <text x="124.0" y="128.0" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="start">Cold</text>
 <text x="442.7" y="128.0" font-size="11" font-weight="400" fill="#878787" text-anchor="end">empty caches</text>
-<line x1="124.0" y1="140" x2="124.0" y2="334" stroke="#1C1C1C"/>
-<text x="124.0" y="352.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">0 s</text>
-<line x1="230.2" y1="140" x2="230.2" y2="334" stroke="#1C1C1C"/>
-<text x="230.2" y="352.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">100 s</text>
-<line x1="336.4" y1="140" x2="336.4" y2="334" stroke="#1C1C1C"/>
-<text x="336.4" y="352.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">200 s</text>
-<line x1="442.7" y1="140" x2="442.7" y2="334" stroke="#1C1C1C"/>
-<text x="442.7" y="352.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">300 s</text>
-<rect x="124.0" y="140.0" width="128.5" height="14" rx="4" fill="#5B8DEF"><title>GitHub-hosted, node, cold: median 121 s (min 121, max 121, n=1)</title></rect>
-<text x="258.5" y="151.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">121</text>
-<rect x="124.0" y="158.0" width="154.0" height="14" rx="4" fill="#00A88A"><title>Self-hosted, node, cold: median 145 s (min 145, max 145, n=1)</title></rect>
-<text x="284.0" y="169.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">145</text>
-<rect x="124.0" y="194.0" width="256.0" height="14" rx="4" fill="#5B8DEF"><title>GitHub-hosted, go, cold: median 241 s (min 241, max 241, n=1)</title></rect>
-<text x="386.0" y="205.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">241</text>
-<rect x="124.0" y="212.0" width="311.2" height="14" rx="4" fill="#00A88A"><title>Self-hosted, go, cold: median 293 s (min 293, max 293, n=1)</title></rect>
-<text x="441.2" y="223.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">293</text>
-<rect x="124.0" y="248.0" width="86.0" height="14" rx="4" fill="#5B8DEF"><title>GitHub-hosted, rust, cold: median 81 s (min 81, max 81, n=1)</title></rect>
-<text x="216.0" y="259.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">81</text>
-<rect x="124.0" y="266.0" width="97.7" height="14" rx="4" fill="#00A88A"><title>Self-hosted, rust, cold: median 92 s (min 92, max 92, n=1)</title></rect>
-<text x="227.7" y="277.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">92</text>
-<rect x="124.0" y="302.0" width="177.4" height="14" rx="4" fill="#5B8DEF"><title>GitHub-hosted, docker, cold: median 167 s (min 167, max 167, n=1)</title></rect>
-<text x="307.4" y="313.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">167</text>
-<rect x="124.0" y="320.0" width="246.4" height="14" rx="4" fill="#00A88A"><title>Self-hosted, docker, cold: median 232 s (min 232, max 232, n=1)</title></rect>
-<text x="376.4" y="331.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">232</text>
+<line x1="124.0" y1="140" x2="124.0" y2="406" stroke="#1C1C1C"/>
+<text x="124.0" y="424.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">0 s</text>
+<line x1="230.2" y1="140" x2="230.2" y2="406" stroke="#1C1C1C"/>
+<text x="230.2" y="424.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">100 s</text>
+<line x1="336.4" y1="140" x2="336.4" y2="406" stroke="#1C1C1C"/>
+<text x="336.4" y="424.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">200 s</text>
+<line x1="442.7" y1="140" x2="442.7" y2="406" stroke="#1C1C1C"/>
+<text x="442.7" y="424.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">300 s</text>
+<rect x="124.0" y="140.0" width="122.2" height="14" rx="4" fill="#5B8DEF" fill-opacity="1"><title>GitHub-hosted, node, cold: median 115 s (min 115, max 115, n=1)</title></rect>
+<text x="252.2" y="151.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">115</text>
+<rect x="124.0" y="158.0" width="145.5" height="14" rx="4" fill="#00A88A" fill-opacity="1"><title>Self-hosted, node, cold: median 137 s (min 137, max 137, n=1)</title></rect>
+<text x="275.5" y="169.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">137</text>
+<rect x="124.0" y="176.0" width="154.0" height="14" rx="4" fill="#00A88A" fill-opacity="0.35"><title>Self-hosted, round 1, node, cold: median 145 s (min 145, max 145, n=1)</title></rect>
+<text x="284.0" y="187.5" font-size="11" font-weight="400" fill="#878787" text-anchor="start">145</text>
+<rect x="124.0" y="212.0" width="219.9" height="14" rx="4" fill="#5B8DEF" fill-opacity="1"><title>GitHub-hosted, go, cold: median 207 s (min 207, max 207, n=1)</title></rect>
+<text x="349.9" y="223.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">207</text>
+<rect x="124.0" y="230.0" width="260.2" height="14" rx="4" fill="#00A88A" fill-opacity="1"><title>Self-hosted, go, cold: median 245 s (min 245, max 245, n=1)</title></rect>
+<text x="390.2" y="241.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">245</text>
+<rect x="124.0" y="248.0" width="311.2" height="14" rx="4" fill="#00A88A" fill-opacity="0.35"><title>Self-hosted, round 1, go, cold: median 293 s (min 293, max 293, n=1)</title></rect>
+<text x="441.2" y="259.5" font-size="11" font-weight="400" fill="#878787" text-anchor="start">293</text>
+<rect x="124.0" y="284.0" width="86.0" height="14" rx="4" fill="#5B8DEF" fill-opacity="1"><title>GitHub-hosted, rust, cold: median 81 s (min 81, max 81, n=1)</title></rect>
+<text x="216.0" y="295.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">81</text>
+<rect x="124.0" y="302.0" width="127.5" height="14" rx="4" fill="#00A88A" fill-opacity="1"><title>Self-hosted, rust, cold: median 120 s (min 120, max 120, n=1)</title></rect>
+<text x="257.5" y="313.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">120</text>
+<rect x="124.0" y="320.0" width="97.7" height="14" rx="4" fill="#00A88A" fill-opacity="0.35"><title>Self-hosted, round 1, rust, cold: median 92 s (min 92, max 92, n=1)</title></rect>
+<text x="227.7" y="331.5" font-size="11" font-weight="400" fill="#878787" text-anchor="start">92</text>
+<rect x="124.0" y="356.0" width="191.2" height="14" rx="4" fill="#5B8DEF" fill-opacity="1"><title>GitHub-hosted, docker, cold: median 180 s (min 180, max 180, n=1)</title></rect>
+<text x="321.2" y="367.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">180</text>
+<rect x="124.0" y="374.0" width="187.0" height="14" rx="4" fill="#00A88A" fill-opacity="1"><title>Self-hosted, docker, cold: median 176 s (min 176, max 176, n=1)</title></rect>
+<text x="317.0" y="385.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">176</text>
+<rect x="124.0" y="392.0" width="246.4" height="14" rx="4" fill="#00A88A" fill-opacity="0.35"><title>Self-hosted, round 1, docker, cold: median 232 s (min 232, max 232, n=1)</title></rect>
+<text x="376.4" y="403.5" font-size="11" font-weight="400" fill="#878787" text-anchor="start">232</text>
 <text x="486.7" y="128.0" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="start">Warm, all jobs in parallel</text>
 <text x="805.3" y="128.0" font-size="11" font-weight="400" fill="#878787" text-anchor="end">median of 3</text>
-<line x1="486.7" y1="140" x2="486.7" y2="334" stroke="#1C1C1C"/>
-<text x="486.7" y="352.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">0 s</text>
-<line x1="592.9" y1="140" x2="592.9" y2="334" stroke="#1C1C1C"/>
-<text x="592.9" y="352.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">100 s</text>
-<line x1="699.1" y1="140" x2="699.1" y2="334" stroke="#1C1C1C"/>
-<text x="699.1" y="352.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">200 s</text>
-<line x1="805.3" y1="140" x2="805.3" y2="334" stroke="#1C1C1C"/>
-<text x="805.3" y="352.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">300 s</text>
-<rect x="486.7" y="140.0" width="133.8" height="14" rx="4" fill="#5B8DEF"><title>GitHub-hosted, node, warm: median 126 s (min 117, max 127, n=3)</title></rect>
-<line x1="610.9" y1="147.0" x2="621.6" y2="147.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="627.6" y="151.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">126</text>
-<rect x="486.7" y="158.0" width="156.1" height="14" rx="4" fill="#00A88A"><title>Self-hosted, node, warm: median 147 s (min 129, max 159, n=3)</title></rect>
-<line x1="623.7" y1="165.0" x2="655.6" y2="165.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="661.6" y="169.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">147</text>
-<rect x="486.7" y="194.0" width="70.1" height="14" rx="4" fill="#5B8DEF"><title>GitHub-hosted, go, warm: median 66 s (min 63, max 67, n=3)</title></rect>
-<line x1="553.6" y1="201.0" x2="557.8" y2="201.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="563.8" y="205.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">66</text>
-<rect x="486.7" y="212.0" width="140.2" height="14" rx="4" fill="#00A88A"><title>Self-hosted, go, warm: median 132 s (min 96, max 147, n=3)</title></rect>
-<line x1="588.6" y1="219.0" x2="642.8" y2="219.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="648.8" y="223.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">132</text>
-<rect x="486.7" y="248.0" width="38.2" height="14" rx="4" fill="#5B8DEF"><title>GitHub-hosted, rust, warm: median 36 s (min 36, max 43, n=3)</title></rect>
-<line x1="524.9" y1="255.0" x2="532.3" y2="255.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="538.3" y="259.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">36</text>
-<rect x="486.7" y="266.0" width="119.0" height="14" rx="4" fill="#00A88A"><title>Self-hosted, rust, warm: median 112 s (min 102, max 130, n=3)</title></rect>
-<line x1="595.0" y1="273.0" x2="624.8" y2="273.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="630.8" y="277.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">112</text>
-<rect x="486.7" y="302.0" width="157.2" height="14" rx="4" fill="#5B8DEF"><title>GitHub-hosted, docker, warm: median 148 s (min 107, max 159, n=3)</title></rect>
-<line x1="600.3" y1="309.0" x2="655.6" y2="309.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="661.6" y="313.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">148</text>
-<rect x="486.7" y="320.0" width="170.0" height="14" rx="4" fill="#00A88A"><title>Self-hosted, docker, warm: median 160 s (min 131, max 173, n=3)</title></rect>
-<line x1="625.8" y1="327.0" x2="670.4" y2="327.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="676.4" y="331.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">160</text>
+<line x1="486.7" y1="140" x2="486.7" y2="406" stroke="#1C1C1C"/>
+<text x="486.7" y="424.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">0 s</text>
+<line x1="592.9" y1="140" x2="592.9" y2="406" stroke="#1C1C1C"/>
+<text x="592.9" y="424.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">100 s</text>
+<line x1="699.1" y1="140" x2="699.1" y2="406" stroke="#1C1C1C"/>
+<text x="699.1" y="424.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">200 s</text>
+<line x1="805.3" y1="140" x2="805.3" y2="406" stroke="#1C1C1C"/>
+<text x="805.3" y="424.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">300 s</text>
+<rect x="486.7" y="140.0" width="132.8" height="14" rx="4" fill="#5B8DEF" fill-opacity="1"><title>GitHub-hosted, node, warm: median 125 s (min 122, max 127, n=3)</title></rect>
+<line x1="616.3" y1="147.0" x2="621.6" y2="147.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="627.6" y="151.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">125</text>
+<rect x="486.7" y="158.0" width="133.8" height="14" rx="4" fill="#00A88A" fill-opacity="1"><title>Self-hosted, node, warm: median 126 s (min 121, max 134, n=3)</title></rect>
+<line x1="615.2" y1="165.0" x2="629.0" y2="165.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="635.0" y="169.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">126</text>
+<rect x="486.7" y="176.0" width="156.1" height="14" rx="4" fill="#00A88A" fill-opacity="0.35"><title>Self-hosted, round 1, node, warm: median 147 s (min 129, max 159, n=3)</title></rect>
+<line x1="623.7" y1="183.0" x2="655.6" y2="183.0" stroke="#FFFFFF" stroke-opacity="0.19" stroke-width="2"/>
+<text x="661.6" y="187.5" font-size="11" font-weight="400" fill="#878787" text-anchor="start">147</text>
+<rect x="486.7" y="212.0" width="69.0" height="14" rx="4" fill="#5B8DEF" fill-opacity="1"><title>GitHub-hosted, go, warm: median 65 s (min 60, max 71, n=3)</title></rect>
+<line x1="550.4" y1="219.0" x2="562.1" y2="219.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="568.1" y="223.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">65</text>
+<rect x="486.7" y="230.0" width="112.6" height="14" rx="4" fill="#00A88A" fill-opacity="1"><title>Self-hosted, go, warm: median 106 s (min 85, max 117, n=3)</title></rect>
+<line x1="577.0" y1="237.0" x2="610.9" y2="237.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="616.9" y="241.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">106</text>
+<rect x="486.7" y="248.0" width="140.2" height="14" rx="4" fill="#00A88A" fill-opacity="0.35"><title>Self-hosted, round 1, go, warm: median 132 s (min 96, max 147, n=3)</title></rect>
+<line x1="588.6" y1="255.0" x2="642.8" y2="255.0" stroke="#FFFFFF" stroke-opacity="0.19" stroke-width="2"/>
+<text x="648.8" y="259.5" font-size="11" font-weight="400" fill="#878787" text-anchor="start">132</text>
+<rect x="486.7" y="284.0" width="37.2" height="14" rx="4" fill="#5B8DEF" fill-opacity="1"><title>GitHub-hosted, rust, warm: median 35 s (min 35, max 37, n=3)</title></rect>
+<line x1="523.8" y1="291.0" x2="526.0" y2="291.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="532.0" y="295.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">35</text>
+<rect x="486.7" y="302.0" width="83.9" height="14" rx="4" fill="#00A88A" fill-opacity="1"><title>Self-hosted, rust, warm: median 79 s (min 50, max 98, n=3)</title></rect>
+<line x1="539.8" y1="309.0" x2="590.8" y2="309.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="596.8" y="313.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">79</text>
+<rect x="486.7" y="320.0" width="119.0" height="14" rx="4" fill="#00A88A" fill-opacity="0.35"><title>Self-hosted, round 1, rust, warm: median 112 s (min 102, max 130, n=3)</title></rect>
+<line x1="595.0" y1="327.0" x2="624.8" y2="327.0" stroke="#FFFFFF" stroke-opacity="0.19" stroke-width="2"/>
+<text x="630.8" y="331.5" font-size="11" font-weight="400" fill="#878787" text-anchor="start">112</text>
+<rect x="486.7" y="356.0" width="172.1" height="14" rx="4" fill="#5B8DEF" fill-opacity="1"><title>GitHub-hosted, docker, warm: median 162 s (min 141, max 162, n=3)</title></rect>
+<line x1="636.4" y1="363.0" x2="658.7" y2="363.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="664.7" y="367.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">162</text>
+<rect x="486.7" y="374.0" width="145.5" height="14" rx="4" fill="#00A88A" fill-opacity="1"><title>Self-hosted, docker, warm: median 137 s (min 127, max 141, n=3)</title></rect>
+<line x1="621.6" y1="381.0" x2="636.4" y2="381.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="642.4" y="385.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">137</text>
+<rect x="486.7" y="392.0" width="170.0" height="14" rx="4" fill="#00A88A" fill-opacity="0.35"><title>Self-hosted, round 1, docker, warm: median 160 s (min 131, max 173, n=3)</title></rect>
+<line x1="625.8" y1="399.0" x2="670.4" y2="399.0" stroke="#FFFFFF" stroke-opacity="0.19" stroke-width="2"/>
+<text x="676.4" y="403.5" font-size="11" font-weight="400" fill="#878787" text-anchor="start">160</text>
 <text x="849.3" y="128.0" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="start">Warm, one job at a time</text>
 <text x="1168.0" y="128.0" font-size="11" font-weight="400" fill="#878787" text-anchor="end">median of 2</text>
-<line x1="849.3" y1="140" x2="849.3" y2="334" stroke="#1C1C1C"/>
-<text x="849.3" y="352.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">0 s</text>
-<line x1="955.6" y1="140" x2="955.6" y2="334" stroke="#1C1C1C"/>
-<text x="955.6" y="352.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">100 s</text>
-<line x1="1061.8" y1="140" x2="1061.8" y2="334" stroke="#1C1C1C"/>
-<text x="1061.8" y="352.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">200 s</text>
-<line x1="1168.0" y1="140" x2="1168.0" y2="334" stroke="#1C1C1C"/>
-<text x="1168.0" y="352.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">300 s</text>
-<rect x="849.3" y="140.0" width="120.0" height="14" rx="4" fill="#5B8DEF"><title>GitHub-hosted, node, serial: median 113 s (min 112, max 114, n=2)</title></rect>
-<line x1="968.3" y1="147.0" x2="970.4" y2="147.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="976.4" y="151.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">113</text>
-<rect x="849.3" y="158.0" width="148.7" height="14" rx="4" fill="#00A88A"><title>Self-hosted, node, serial: median 140 s (min 113, max 167, n=2)</title></rect>
-<line x1="969.4" y1="165.0" x2="1026.7" y2="165.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="1032.7" y="169.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">140</text>
-<rect x="849.3" y="194.0" width="66.9" height="14" rx="4" fill="#5B8DEF"><title>GitHub-hosted, go, serial: median 63 s (min 63, max 63, n=2)</title></rect>
-<line x1="916.3" y1="201.0" x2="916.3" y2="201.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="922.3" y="205.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">63</text>
-<rect x="849.3" y="212.0" width="99.8" height="14" rx="4" fill="#00A88A"><title>Self-hosted, go, serial: median 94 s (min 58, max 130, n=2)</title></rect>
-<line x1="910.9" y1="219.0" x2="987.4" y2="219.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="993.4" y="223.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">94</text>
-<rect x="849.3" y="248.0" width="42.5" height="14" rx="4" fill="#5B8DEF"><title>GitHub-hosted, rust, serial: median 40 s (min 38, max 42, n=2)</title></rect>
-<line x1="889.7" y1="255.0" x2="893.9" y2="255.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="899.9" y="259.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">40</text>
-<text x="853.3" y="277.0" font-size="11" font-weight="400" fill="#878787" text-anchor="start">failed, see notes</text>
-<rect x="849.3" y="302.0" width="157.7" height="14" rx="4" fill="#5B8DEF"><title>GitHub-hosted, docker, serial: median 148.5 s (min 144, max 153, n=2)</title></rect>
-<line x1="1002.3" y1="309.0" x2="1011.9" y2="309.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="1017.9" y="313.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">148.5</text>
-<rect x="849.3" y="320.0" width="121.6" height="14" rx="4" fill="#00A88A"><title>Self-hosted, docker, serial: median 114.5 s (min 106, max 123, n=2)</title></rect>
-<line x1="961.9" y1="327.0" x2="980.0" y2="327.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
-<text x="986.0" y="331.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">114.5</text>
-<text x="32.0" y="161.0" font-size="14" font-weight="600" fill="#FFFFFF" text-anchor="start">Node</text>
-<text x="32.0" y="215.0" font-size="14" font-weight="600" fill="#FFFFFF" text-anchor="start">Go</text>
-<text x="32.0" y="269.0" font-size="14" font-weight="600" fill="#FFFFFF" text-anchor="start">Rust</text>
-<text x="32.0" y="323.0" font-size="14" font-weight="600" fill="#FFFFFF" text-anchor="start">Docker</text>
-<text x="32.0" y="396.0" font-size="11" font-weight="400" fill="#878787" text-anchor="start">Bars: median. Thin line: min to max. Source: benchmarks/summary.json, generated by benchmarks/chart.py.</text>
+<line x1="849.3" y1="140" x2="849.3" y2="406" stroke="#1C1C1C"/>
+<text x="849.3" y="424.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">0 s</text>
+<line x1="955.6" y1="140" x2="955.6" y2="406" stroke="#1C1C1C"/>
+<text x="955.6" y="424.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">100 s</text>
+<line x1="1061.8" y1="140" x2="1061.8" y2="406" stroke="#1C1C1C"/>
+<text x="1061.8" y="424.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">200 s</text>
+<line x1="1168.0" y1="140" x2="1168.0" y2="406" stroke="#1C1C1C"/>
+<text x="1168.0" y="424.0" font-size="11" font-weight="400" fill="#878787" text-anchor="middle">300 s</text>
+<rect x="849.3" y="140.0" width="127.5" height="14" rx="4" fill="#5B8DEF" fill-opacity="1"><title>GitHub-hosted, node, serial: median 120 s (min 119, max 121, n=2)</title></rect>
+<line x1="975.7" y1="147.0" x2="977.9" y2="147.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="983.9" y="151.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">120</text>
+<rect x="849.3" y="158.0" width="121.6" height="14" rx="4" fill="#00A88A" fill-opacity="1"><title>Self-hosted, node, serial: median 114.5 s (min 113, max 116, n=2)</title></rect>
+<line x1="969.4" y1="165.0" x2="972.6" y2="165.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="978.6" y="169.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">114.5</text>
+<rect x="849.3" y="176.0" width="148.7" height="14" rx="4" fill="#00A88A" fill-opacity="0.35"><title>Self-hosted, round 1, node, serial: median 140 s (min 113, max 167, n=2)</title></rect>
+<line x1="969.4" y1="183.0" x2="1026.7" y2="183.0" stroke="#FFFFFF" stroke-opacity="0.19" stroke-width="2"/>
+<text x="1032.7" y="187.5" font-size="11" font-weight="400" fill="#878787" text-anchor="start">140</text>
+<rect x="849.3" y="212.0" width="70.6" height="14" rx="4" fill="#5B8DEF" fill-opacity="1"><title>GitHub-hosted, go, serial: median 66.5 s (min 61, max 72, n=2)</title></rect>
+<line x1="914.1" y1="219.0" x2="925.8" y2="219.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="931.8" y="223.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">66.5</text>
+<rect x="849.3" y="230.0" width="52.6" height="14" rx="4" fill="#00A88A" fill-opacity="1"><title>Self-hosted, go, serial: median 49.5 s (min 47, max 52, n=2)</title></rect>
+<line x1="899.3" y1="237.0" x2="904.6" y2="237.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="910.6" y="241.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">49.5</text>
+<rect x="849.3" y="248.0" width="99.8" height="14" rx="4" fill="#00A88A" fill-opacity="0.35"><title>Self-hosted, round 1, go, serial: median 94 s (min 58, max 130, n=2)</title></rect>
+<line x1="910.9" y1="255.0" x2="987.4" y2="255.0" stroke="#FFFFFF" stroke-opacity="0.19" stroke-width="2"/>
+<text x="993.4" y="259.5" font-size="11" font-weight="400" fill="#878787" text-anchor="start">94</text>
+<rect x="849.3" y="284.0" width="44.1" height="14" rx="4" fill="#5B8DEF" fill-opacity="1"><title>GitHub-hosted, rust, serial: median 41.5 s (min 38, max 45, n=2)</title></rect>
+<line x1="889.7" y1="291.0" x2="897.1" y2="291.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="903.1" y="295.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">41.5</text>
+<rect x="849.3" y="302.0" width="32.9" height="14" rx="4" fill="#00A88A" fill-opacity="1"><title>Self-hosted, rust, serial: median 31 s (min 31, max 31, n=2)</title></rect>
+<line x1="882.3" y1="309.0" x2="882.3" y2="309.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="888.3" y="313.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">31</text>
+<text x="853.3" y="331.0" font-size="11" font-weight="400" fill="#878787" text-anchor="start">failed, see notes</text>
+<rect x="849.3" y="356.0" width="136.0" height="14" rx="4" fill="#5B8DEF" fill-opacity="1"><title>GitHub-hosted, docker, serial: median 128 s (min 119, max 137, n=2)</title></rect>
+<line x1="975.7" y1="363.0" x2="994.9" y2="363.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="1000.9" y="367.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">128</text>
+<rect x="849.3" y="374.0" width="111.5" height="14" rx="4" fill="#00A88A" fill-opacity="1"><title>Self-hosted, docker, serial: median 105 s (min 103, max 107, n=2)</title></rect>
+<line x1="958.7" y1="381.0" x2="963.0" y2="381.0" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2"/>
+<text x="969.0" y="385.5" font-size="11" font-weight="400" fill="#B2B2B2" text-anchor="start">105</text>
+<rect x="849.3" y="392.0" width="121.6" height="14" rx="4" fill="#00A88A" fill-opacity="0.35"><title>Self-hosted, round 1, docker, serial: median 114.5 s (min 106, max 123, n=2)</title></rect>
+<line x1="961.9" y1="399.0" x2="980.0" y2="399.0" stroke="#FFFFFF" stroke-opacity="0.19" stroke-width="2"/>
+<text x="986.0" y="403.5" font-size="11" font-weight="400" fill="#878787" text-anchor="start">114.5</text>
+<text x="32.0" y="170.0" font-size="14" font-weight="600" fill="#FFFFFF" text-anchor="start">Node</text>
+<text x="32.0" y="242.0" font-size="14" font-weight="600" fill="#FFFFFF" text-anchor="start">Go</text>
+<text x="32.0" y="314.0" font-size="14" font-weight="600" fill="#FFFFFF" text-anchor="start">Rust</text>
+<text x="32.0" y="386.0" font-size="14" font-weight="600" fill="#FFFFFF" text-anchor="start">Docker</text>
+<text x="32.0" y="468.0" font-size="11" font-weight="400" fill="#878787" text-anchor="start">Bars: median. Thin line: min to max. Source: benchmarks/summary.json, generated by benchmarks/chart.py.</text>
 </svg>

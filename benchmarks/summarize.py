@@ -11,8 +11,7 @@ def stats(values):
     return {"median_s": median(values), "min_s": min(values), "max_s": max(values), "n": len(values)}
 
 
-def main():
-    results = json.load(open(sys.argv[1]))
+def summarize(results):
     totals, hardware = {}, {}
     for run in results["runs"]:
         kind = re.sub(r"\d+$", "", run["round"])
@@ -37,12 +36,22 @@ def main():
         }
         workloads[workload] = entry
 
-    json.dump({
+    return {
         "date": results.get("date"),
         "repository": results["repository"],
-        "speedup_definition": "hosted median / self-hosted median, above 1 means self-hosted is faster",
         "hardware": {side: {key: sorted(values) for key, values in info.items()} for side, info in hardware.items()},
         "workloads": workloads,
+    }
+
+
+def main():
+    rounds = {}
+    for item in sys.argv[1:]:
+        name, path = item.split("=", 1)
+        rounds[name] = summarize(json.load(open(path)))
+    json.dump({
+        "speedup_definition": "hosted median / self-hosted median, above 1 means self-hosted is faster",
+        "rounds": rounds,
     }, sys.stdout, indent=1)
     print()
 
