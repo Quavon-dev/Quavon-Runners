@@ -34,7 +34,7 @@ Why Go and Rust are still slower in parallel:
   on the path of `target/`. On GitHub the path is always the same. `go build ./...` took 4 s
   hosted, 8 s on the runner that built caddy before and 26–41 s on the others. Since then,
   every runner that has an LXC of its own works in `/srv/gha-runners/r1`, so these caches
-  hit on every such runner (see [Caching](caching.md#paths-per-runner)); the next round will
+  hit on every such runner (see [Caching](caching.md)); the next round will
   measure it.
 - **CPU.** CPU-bound steps (tests, uncached compiles) took about twice as long with four jobs
   on the 6-core desktop CPU as on GitHub's EPYC/Xeon cores, and were level with one job at a
