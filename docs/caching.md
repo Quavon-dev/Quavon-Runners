@@ -1,7 +1,7 @@
 # Caching
 
 These caches live in the LXC. They need no workflow changes. Each cache server is capped
-(64 MB RAM, the actions cache 256 MB) and idles at 5-25 MB; together about 120 MB.
+(64 MB RAM, the actions cache 256 MB) and idles at 3-20 MB; together about 75 MB.
 
 | Cache | What it speeds up | Where |
 |---|---|---|
