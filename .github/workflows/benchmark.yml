@@ -1,0 +1,138 @@
+name: benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      self_hosted_runs_on:
+        description: runs-on of the self-hosted side, as JSON
+        default: '["self-hosted", "linux"]'
+      hosted_runs_on:
+        description: runs-on of the GitHub-hosted side
+        default: ubuntu-latest
+      max_parallel:
+        description: Jobs running at the same time
+        default: '8'
+
+permissions:
+  contents: read
+
+env:
+  DOCKER_BUILD_SUMMARY: false
+  DOCKER_BUILD_RECORD_UPLOAD: false
+
+jobs:
+  bench:
+    name: ${{ matrix.workload }} / ${{ matrix.side }}
+    runs-on: ${{ matrix.side == 'hosted' && inputs.hosted_runs_on || fromJSON(inputs.self_hosted_runs_on) }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(inputs.max_parallel) }}
+      matrix:
+        side: [hosted, self-hosted]
+        workload: [node, go, rust, docker]
+        include:
+          - workload: node
+            repository: axios/axios
+            ref: aa54a5e1e0e50cd1a2561b854ae5490ff589d065
+          - workload: go
+            repository: caddyserver/caddy
+            ref: 0d98caea58f794f88e709b1bef2880996a471bca
+          - workload: rust
+            repository: BurntSushi/ripgrep
+            ref: e89fff89ac9af12e8d4ce9d5fd07beb408ca730f
+          - workload: docker
+            repository: distribution/distribution
+            ref: 3220848f15d9279c66a41aa0a257469e6aede1e9
+    steps:
+      - name: Probe
+        run: |
+          jq -nc \
+            --arg runner "$RUNNER_NAME" \
+            --arg cpu_model "$(lscpu | sed -n 's/^Model name: *//p' | head -1)" \
+            --argjson nproc "$(nproc)" \
+            --argjson mem_mb "$(free -m | awk '/^Mem:/ { print $2 }')" \
+            --arg cgroup_cpu_max "$(cat /sys/fs/cgroup/cpu.max 2>/dev/null)" \
+            --arg cgroup_mem_max "$(cat /sys/fs/cgroup/memory.max 2>/dev/null)" \
+            --arg gomaxprocs "${GOMAXPROCS:-}" \
+            --arg disk_free "$(df -h --output=avail "$GITHUB_WORKSPACE" | tail -1 | tr -d ' ')" \
+            --arg kernel "$(uname -r)" \
+            --argjson git_cache "$([[ -d .git ]] && echo true || echo false)" \
+            '$ARGS.named' | sed 's/^/BENCH_PROBE /'
+
+      - name: Checkout (own repository)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Checkout workload
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ matrix.repository }}
+          ref: ${{ matrix.ref }}
+          path: src
+          persist-credentials: false
+
+      - name: Setup node
+        if: matrix.workload == 'node'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.21.0
+          cache: npm
+          cache-dependency-path: src/package-lock.json
+
+      - name: Setup go
+        if: matrix.workload == 'go'
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: src/go.mod
+          cache-dependency-path: src/go.sum
+
+      - name: Setup rust
+        if: matrix.workload == 'rust'
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal
+          echo RUSTUP_TOOLCHAIN=1.90.0 >>"$GITHUB_ENV"
+
+      - name: Rust cache
+        if: matrix.workload == 'rust'
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: src
+          cache-bin: false
+
+      - name: Setup buildx
+        if: matrix.workload == 'docker'
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Install
+        if: matrix.workload == 'node'
+        working-directory: src
+        run: npm ci --no-audit --no-fund
+
+      - name: Build
+        working-directory: src
+        run: |
+          case "${{ matrix.workload }}" in
+            node) npm run build ;;
+            go) go build ./... ;;
+            rust) cargo build --release --locked ;;
+          esac
+
+      - name: Docker build
+        if: matrix.workload == 'docker'
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: src
+          push: false
+          cache-from: type=gha,scope=bench-distribution
+          cache-to: type=gha,mode=max,scope=bench-distribution
+
+      - name: Test
+        if: matrix.workload == 'node' || matrix.workload == 'go'
+        working-directory: src
+        run: |
+          case "${{ matrix.workload }}" in
+            node) npx vitest run --project unit --exclude tests/unit/adapters/fetch.test.js --maxWorkers="${GOMAXPROCS:-$(nproc)}" ;;
+            go) go test -short -count=1 -skip TestServer_ClosedRequestBodyDoesNotDesyncHTTP1 ./caddyconfig/... ./modules/caddyhttp/... ;;
+          esac
