@@ -15,4 +15,7 @@ apt_install \
 gem install --no-document bundler
 
 log "Composer"
-curl -fsSL https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php
+echo "$(curl -fsSL https://composer.github.io/installer.sig)  /tmp/composer-setup.php" | sha384sum -c --quiet - \
+  || die "checksum mismatch: composer installer"
+php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer

@@ -10,7 +10,7 @@
 # The runner binaries themselves are NOT baked in: they live in the per-runner
 # directory bind-mounted at the same path on the host, so the runner can
 # self-update and so container jobs get correct host paths.
-FROM ubuntu:24.04
+FROM ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
 
 LABEL com.quavon.gha-runner=true
 

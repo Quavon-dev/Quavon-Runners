@@ -59,15 +59,6 @@ declare -A SHA_KUBECONFORM=(
 arch="$(arch_deb)"
 work="$(mktemp -d)"
 
-# fetch <url> <sha256> -> path of the verified download
-fetch() {
-  local out
-  out="${work}/$(basename "$1")"
-  curl -fsSL --retry 4 --retry-all-errors -o "$out" "$1"
-  echo "$2  $out" | sha256sum -c --quiet - || die "checksum mismatch: $1"
-  echo "$out"
-}
-
 # install_from_tar <archive> <member path inside archive> <installed name>
 install_from_tar() {
   local dir="${work}/x-$3"

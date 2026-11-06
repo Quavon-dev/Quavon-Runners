@@ -20,7 +20,7 @@ FAKE_BIN = f"{ROOT}/tests/fake-pve/bin"
 STATE = "/tmp/fake-state"
 TOKEN = "AAAABBBBCCCCDDDDEEEEFFFF1234"
 PAT = "github_pat_TESTONLY_0123456789abcdef"
-PASTE = f"./config.sh --url https://github.com/quavon-dev --token {TOKEN}"
+PASTE = f"./config.sh --url https://github.com/example-org --token {TOKEN}"
 ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b[()][0B]|\r")
 
 ENTER, ESC, TAB, CTRL_C = "\r", "\x1b", "\t", "\x03"
@@ -189,7 +189,7 @@ def case_happy_shared():
     rc = finish(c)
     out = transcript(c)
     check(rc == 0, f"exit {rc}\n{out[-2000:]}")
-    for line in ["Proxmox VE 9.1.2 host", "Next free container ID: 100", "GitHub target: https://github.com/quavon-dev",
+    for line in ["Proxmox VE 9.1.2 host", "Next free container ID: 100", "GitHub target: https://github.com/example-org",
                  "Updated LXC template list", "Downloaded template debian-13-standard", "Created LXC 100",
                  "Firewall rules: internet only", "Network up", "Isolation verified", "Updated container OS packages",
                  "Deployed scripts", "Installed Docker (29.8.2)", "Registered runner(s): gha-runners-1,gha-runners-2",
@@ -457,7 +457,7 @@ def case_session_hangup_during_build():
 def case_noninteractive():
     reset_host()
     r = subprocess.run(["bash", "-c", open(f"{ROOT}/install.sh").read()], cwd="/tmp", capture_output=True, text=True,
-                       timeout=200, env=env(NONINTERACTIVE=1, GH_URL="https://github.com/quavon-dev/app",
+                       timeout=200, env=env(NONINTERACTIVE=1, GH_URL="https://github.com/example-org/example-repo",
                                             GH_TOKEN=TOKEN, RUNNER_COUNT=3, LAYOUT="separate", SIZE="small",
                                             RUNNER_LABELS="docker , ci"))
     out = clean(r.stdout + r.stderr)
@@ -471,7 +471,7 @@ def case_noninteractive():
 def case_invalid_cpu_units_rejected():
     reset_host()
     r = subprocess.run(["bash", "-c", open(f"{ROOT}/install.sh").read()], cwd="/tmp", capture_output=True, text=True,
-                       timeout=60, env=env(NONINTERACTIVE=1, GH_URL="https://github.com/quavon-dev/app",
+                       timeout=60, env=env(NONINTERACTIVE=1, GH_URL="https://github.com/example-org/example-repo",
                                            GH_TOKEN=TOKEN, CPU_UNITS=0))
     check(r.returncode != 0 and "CPU_UNITS must be 1-10000" in clean(r.stdout + r.stderr), "CPU_UNITS=0 accepted")
     check(read(f"{STATE}/ids").split() == [], "container created despite invalid CPU_UNITS")

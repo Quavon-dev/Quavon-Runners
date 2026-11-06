@@ -22,7 +22,7 @@ add_env JAVA_HOME "$default_home"
 
 log "Gradle (latest)"
 gradle_version="$(curl -fsSL https://services.gradle.org/versions/current | jq -r .version)"
-curl -fsSL "https://services.gradle.org/distributions/gradle-${gradle_version}-bin.zip" -o /tmp/gradle.zip
-unzip -q /tmp/gradle.zip -d /usr/share
+gradle_url="https://services.gradle.org/distributions/gradle-${gradle_version}-bin.zip"
+unzip -q "$(fetch "$gradle_url" "$(sha_of "${gradle_url}.sha256")")" -d /usr/share
 ln -sf "/usr/share/gradle-${gradle_version}/bin/gradle" /usr/bin/gradle
 add_env GRADLE_HOME "/usr/share/gradle-${gradle_version}"
