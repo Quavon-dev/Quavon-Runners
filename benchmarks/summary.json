@@ -1,224 +1,460 @@
 {
- "date": "2026-11-06",
- "repository": "Quavon-dev/runner-benchmark",
  "speedup_definition": "hosted median / self-hosted median, above 1 means self-hosted is faster",
- "hardware": {
-  "hosted": {
-   "cpu_models": [
-    "AMD EPYC 7763 64-Core Processor",
-    "AMD EPYC 9V45 96-Core Processor",
-    "AMD EPYC 9V74 80-Core Processor",
-    "INTEL(R) XEON(R) PLATINUM 8573C",
-    "Intel(R) Xeon(R) 6973P-C",
-    "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz"
-   ],
-   "vcpus": [
-    "2"
-   ],
-   "mem_mb": [
-    7931,
-    7932,
-    7936
-   ],
-   "cgroup_mem_max": [
-    ""
-   ]
-  },
-  "self-hosted": {
-   "cpu_models": [
-    "AMD Ryzen 5 PRO 4650G with Radeon Graphics"
-   ],
-   "vcpus": [
-    "2"
-   ],
-   "mem_mb": [
-    63604
-   ],
-   "cgroup_mem_max": [
-    "4294967296"
-   ]
-  }
- },
- "workloads": {
-  "docker": {
-   "hosted": {
-    "cold": {
-     "median_s": 167.0,
-     "min_s": 167.0,
-     "max_s": 167.0,
-     "n": 1
+ "rounds": {
+  "r2": {
+   "date": "2026-11-06",
+   "repository": "Quavon-dev/runner-benchmark",
+   "hardware": {
+    "hosted": {
+     "cpu_models": [
+      "AMD EPYC 7763 64-Core Processor",
+      "AMD EPYC 9V45 96-Core Processor",
+      "AMD EPYC 9V74 80-Core Processor",
+      "INTEL(R) XEON(R) PLATINUM 8573C",
+      "Intel(R) Xeon(R) 6975P-C",
+      "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz"
+     ],
+     "vcpus": [
+      "2"
+     ],
+     "mem_mb": [
+      7776,
+      7931,
+      7932,
+      7936
+     ],
+     "cgroup_mem_max": [
+      ""
+     ]
     },
-    "warm": {
-     "median_s": 148.0,
-     "min_s": 107.0,
-     "max_s": 159.0,
-     "n": 3
-    },
-    "serial": {
-     "median_s": 148.5,
-     "min_s": 144.0,
-     "max_s": 153.0,
-     "n": 2
+    "self-hosted": {
+     "cpu_models": [
+      "AMD Ryzen 5 PRO 4650G with Radeon Graphics"
+     ],
+     "vcpus": [
+      "2"
+     ],
+     "mem_mb": [
+      63604
+     ],
+     "cgroup_mem_max": [
+      "4294967296"
+     ]
     }
    },
-   "self-hosted": {
-    "cold": {
-     "median_s": 232.0,
-     "min_s": 232.0,
-     "max_s": 232.0,
-     "n": 1
+   "workloads": {
+    "docker": {
+     "self-hosted": {
+      "cold": {
+       "median_s": 176.0,
+       "min_s": 176.0,
+       "max_s": 176.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 137.0,
+       "min_s": 127.0,
+       "max_s": 141.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 105.0,
+       "min_s": 103.0,
+       "max_s": 107.0,
+       "n": 2
+      }
+     },
+     "hosted": {
+      "cold": {
+       "median_s": 180.0,
+       "min_s": 180.0,
+       "max_s": 180.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 162.0,
+       "min_s": 141.0,
+       "max_s": 162.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 128.0,
+       "min_s": 119.0,
+       "max_s": 137.0,
+       "n": 2
+      }
+     },
+     "speedup": {
+      "cold": 1.02,
+      "warm": 1.18,
+      "serial": 1.22
+     }
     },
-    "warm": {
-     "median_s": 160.0,
-     "min_s": 131.0,
-     "max_s": 173.0,
-     "n": 3
+    "go": {
+     "hosted": {
+      "cold": {
+       "median_s": 207.0,
+       "min_s": 207.0,
+       "max_s": 207.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 65.0,
+       "min_s": 60.0,
+       "max_s": 71.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 66.5,
+       "min_s": 61.0,
+       "max_s": 72.0,
+       "n": 2
+      }
+     },
+     "self-hosted": {
+      "cold": {
+       "median_s": 245.0,
+       "min_s": 245.0,
+       "max_s": 245.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 106.0,
+       "min_s": 85.0,
+       "max_s": 117.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 49.5,
+       "min_s": 47.0,
+       "max_s": 52.0,
+       "n": 2
+      }
+     },
+     "speedup": {
+      "cold": 0.84,
+      "warm": 0.61,
+      "serial": 1.34
+     }
     },
-    "serial": {
-     "median_s": 114.5,
-     "min_s": 106.0,
-     "max_s": 123.0,
-     "n": 2
+    "node": {
+     "hosted": {
+      "cold": {
+       "median_s": 115.0,
+       "min_s": 115.0,
+       "max_s": 115.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 125.0,
+       "min_s": 122.0,
+       "max_s": 127.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 120.0,
+       "min_s": 119.0,
+       "max_s": 121.0,
+       "n": 2
+      }
+     },
+     "self-hosted": {
+      "cold": {
+       "median_s": 137.0,
+       "min_s": 137.0,
+       "max_s": 137.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 126.0,
+       "min_s": 121.0,
+       "max_s": 134.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 114.5,
+       "min_s": 113.0,
+       "max_s": 116.0,
+       "n": 2
+      }
+     },
+     "speedup": {
+      "cold": 0.84,
+      "warm": 0.99,
+      "serial": 1.05
+     }
+    },
+    "rust": {
+     "hosted": {
+      "cold": {
+       "median_s": 81.0,
+       "min_s": 81.0,
+       "max_s": 81.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 35.0,
+       "min_s": 35.0,
+       "max_s": 37.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 41.5,
+       "min_s": 38.0,
+       "max_s": 45.0,
+       "n": 2
+      }
+     },
+     "self-hosted": {
+      "cold": {
+       "median_s": 120.0,
+       "min_s": 120.0,
+       "max_s": 120.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 79.0,
+       "min_s": 50.0,
+       "max_s": 98.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 31.0,
+       "min_s": 31.0,
+       "max_s": 31.0,
+       "n": 2
+      }
+     },
+     "speedup": {
+      "cold": 0.68,
+      "warm": 0.44,
+      "serial": 1.34
+     }
     }
-   },
-   "speedup": {
-    "cold": 0.72,
-    "warm": 0.93,
-    "serial": 1.3
    }
   },
-  "go": {
-   "hosted": {
-    "cold": {
-     "median_s": 241.0,
-     "min_s": 241.0,
-     "max_s": 241.0,
-     "n": 1
+  "r1": {
+   "date": "2026-11-06",
+   "repository": "Quavon-dev/runner-benchmark",
+   "hardware": {
+    "hosted": {
+     "cpu_models": [
+      "AMD EPYC 7763 64-Core Processor",
+      "AMD EPYC 9V45 96-Core Processor",
+      "AMD EPYC 9V74 80-Core Processor",
+      "INTEL(R) XEON(R) PLATINUM 8573C",
+      "Intel(R) Xeon(R) 6973P-C",
+      "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz"
+     ],
+     "vcpus": [
+      "2"
+     ],
+     "mem_mb": [
+      7931,
+      7932,
+      7936
+     ],
+     "cgroup_mem_max": [
+      ""
+     ]
     },
-    "warm": {
-     "median_s": 66.0,
-     "min_s": 63.0,
-     "max_s": 67.0,
-     "n": 3
-    },
-    "serial": {
-     "median_s": 63.0,
-     "min_s": 63.0,
-     "max_s": 63.0,
-     "n": 2
+    "self-hosted": {
+     "cpu_models": [
+      "AMD Ryzen 5 PRO 4650G with Radeon Graphics"
+     ],
+     "vcpus": [
+      "2"
+     ],
+     "mem_mb": [
+      63604
+     ],
+     "cgroup_mem_max": [
+      "4294967296"
+     ]
     }
    },
-   "self-hosted": {
-    "cold": {
-     "median_s": 293.0,
-     "min_s": 293.0,
-     "max_s": 293.0,
-     "n": 1
+   "workloads": {
+    "docker": {
+     "hosted": {
+      "cold": {
+       "median_s": 167.0,
+       "min_s": 167.0,
+       "max_s": 167.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 148.0,
+       "min_s": 107.0,
+       "max_s": 159.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 148.5,
+       "min_s": 144.0,
+       "max_s": 153.0,
+       "n": 2
+      }
+     },
+     "self-hosted": {
+      "cold": {
+       "median_s": 232.0,
+       "min_s": 232.0,
+       "max_s": 232.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 160.0,
+       "min_s": 131.0,
+       "max_s": 173.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 114.5,
+       "min_s": 106.0,
+       "max_s": 123.0,
+       "n": 2
+      }
+     },
+     "speedup": {
+      "cold": 0.72,
+      "warm": 0.93,
+      "serial": 1.3
+     }
     },
-    "warm": {
-     "median_s": 132.0,
-     "min_s": 96.0,
-     "max_s": 147.0,
-     "n": 3
+    "go": {
+     "hosted": {
+      "cold": {
+       "median_s": 241.0,
+       "min_s": 241.0,
+       "max_s": 241.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 66.0,
+       "min_s": 63.0,
+       "max_s": 67.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 63.0,
+       "min_s": 63.0,
+       "max_s": 63.0,
+       "n": 2
+      }
+     },
+     "self-hosted": {
+      "cold": {
+       "median_s": 293.0,
+       "min_s": 293.0,
+       "max_s": 293.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 132.0,
+       "min_s": 96.0,
+       "max_s": 147.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 94.0,
+       "min_s": 58.0,
+       "max_s": 130.0,
+       "n": 2
+      }
+     },
+     "speedup": {
+      "cold": 0.82,
+      "warm": 0.5,
+      "serial": 0.67
+     }
     },
-    "serial": {
-     "median_s": 94.0,
-     "min_s": 58.0,
-     "max_s": 130.0,
-     "n": 2
+    "node": {
+     "hosted": {
+      "cold": {
+       "median_s": 121.0,
+       "min_s": 121.0,
+       "max_s": 121.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 126.0,
+       "min_s": 117.0,
+       "max_s": 127.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 113.0,
+       "min_s": 112.0,
+       "max_s": 114.0,
+       "n": 2
+      }
+     },
+     "self-hosted": {
+      "cold": {
+       "median_s": 145.0,
+       "min_s": 145.0,
+       "max_s": 145.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 147.0,
+       "min_s": 129.0,
+       "max_s": 159.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 140.0,
+       "min_s": 113.0,
+       "max_s": 167.0,
+       "n": 2
+      }
+     },
+     "speedup": {
+      "cold": 0.83,
+      "warm": 0.86,
+      "serial": 0.81
+     }
+    },
+    "rust": {
+     "hosted": {
+      "cold": {
+       "median_s": 81.0,
+       "min_s": 81.0,
+       "max_s": 81.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 36.0,
+       "min_s": 36.0,
+       "max_s": 43.0,
+       "n": 3
+      },
+      "serial": {
+       "median_s": 40.0,
+       "min_s": 38.0,
+       "max_s": 42.0,
+       "n": 2
+      }
+     },
+     "self-hosted": {
+      "cold": {
+       "median_s": 92.0,
+       "min_s": 92.0,
+       "max_s": 92.0,
+       "n": 1
+      },
+      "warm": {
+       "median_s": 112.0,
+       "min_s": 102.0,
+       "max_s": 130.0,
+       "n": 3
+      }
+     },
+     "speedup": {
+      "cold": 0.88,
+      "warm": 0.32
+     }
     }
-   },
-   "speedup": {
-    "cold": 0.82,
-    "warm": 0.5,
-    "serial": 0.67
-   }
-  },
-  "node": {
-   "hosted": {
-    "cold": {
-     "median_s": 121.0,
-     "min_s": 121.0,
-     "max_s": 121.0,
-     "n": 1
-    },
-    "warm": {
-     "median_s": 126.0,
-     "min_s": 117.0,
-     "max_s": 127.0,
-     "n": 3
-    },
-    "serial": {
-     "median_s": 113.0,
-     "min_s": 112.0,
-     "max_s": 114.0,
-     "n": 2
-    }
-   },
-   "self-hosted": {
-    "cold": {
-     "median_s": 145.0,
-     "min_s": 145.0,
-     "max_s": 145.0,
-     "n": 1
-    },
-    "warm": {
-     "median_s": 147.0,
-     "min_s": 129.0,
-     "max_s": 159.0,
-     "n": 3
-    },
-    "serial": {
-     "median_s": 140.0,
-     "min_s": 113.0,
-     "max_s": 167.0,
-     "n": 2
-    }
-   },
-   "speedup": {
-    "cold": 0.83,
-    "warm": 0.86,
-    "serial": 0.81
-   }
-  },
-  "rust": {
-   "hosted": {
-    "cold": {
-     "median_s": 81.0,
-     "min_s": 81.0,
-     "max_s": 81.0,
-     "n": 1
-    },
-    "warm": {
-     "median_s": 36.0,
-     "min_s": 36.0,
-     "max_s": 43.0,
-     "n": 3
-    },
-    "serial": {
-     "median_s": 40.0,
-     "min_s": 38.0,
-     "max_s": 42.0,
-     "n": 2
-    }
-   },
-   "self-hosted": {
-    "cold": {
-     "median_s": 92.0,
-     "min_s": 92.0,
-     "max_s": 92.0,
-     "n": 1
-    },
-    "warm": {
-     "median_s": 112.0,
-     "min_s": 102.0,
-     "max_s": 130.0,
-     "n": 3
-    }
-   },
-   "speedup": {
-    "cold": 0.88,
-    "warm": 0.32
    }
   }
  }

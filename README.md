@@ -78,9 +78,9 @@ jobs:
 | [Forking](docs/forking.md) | install from a fork, your own images |
 | [Development](docs/development.md) | tests and repository layout |
 
-**Benchmarks:** in the first measured round, four jobs sharing one 6-core desktop CPU
-were slower than GitHub-hosted runners; one job at a time was closer. See the
-[numbers and caveats](docs/benchmarks.md).
+**Benchmarks:** after the cache fixes, four jobs sharing one 6-core desktop CPU were level
+with GitHub-hosted runners on Node, faster on Docker and still slower on Go and Rust; one job
+at a time was faster on all four (Go and Rust on runners that had built them before). See the [numbers and caveats](docs/benchmarks.md).
 
 ## Security
 
