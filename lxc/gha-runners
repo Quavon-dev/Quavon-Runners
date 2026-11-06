@@ -567,7 +567,7 @@ trim_shared_caches() {
 # labelled com.quavon.keep=true stay. LEFTOVER_MINUTES in config.env, 0 = off.
 remove_leftover_containers() {
   local minutes="${LEFTOVER_MINUTES:-1440}" cutoff id name created keep
-  [[ "$minutes" =~ ^[0-9]+$ ]] && (( minutes > 0 )) || return 0
+  [[ "${SHARED_DOCKER:-0}" != 1 && "$minutes" =~ ^[0-9]+$ ]] && (( minutes > 0 )) || return 0
   cutoff=$(( $(date +%s) - minutes * 60 ))
   for id in $(docker ps -aq); do
     read -r name created keep <<<"$(docker inspect -f '{{.Name}} {{.Created}} {{index .Config.Labels "com.quavon.keep"}}' "$id" 2>/dev/null)" || continue
@@ -886,7 +886,9 @@ cmd_update() {
 # store first (which builds the image once), otherwise just rebuild.
 cmd_update_image() {
   require_root; load_config
-  if storage_is_containerd; then
+  if storage_is_containerd && [[ "${SHARED_DOCKER:-0}" == 1 ]]; then
+    warn "Docker uses the containerd image store; not switching, it would delete every image and container (gha-runners migrate-storage)"
+  elif storage_is_containerd; then
     info "Docker uses the containerd image store: switching to the classic store first"
     cmd_migrate_storage --yes
     return

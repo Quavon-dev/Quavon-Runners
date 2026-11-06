@@ -10,6 +10,9 @@ so CI is fast even on small hosts.
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/quavon-dev/quavon-docker-runners/main/install.sh)"
 ```
 
+No Proxmox? The same runners install on any Debian/Ubuntu VM or server with `_ host`:
+see [Quick start without Proxmox](docs/install-linux.md).
+
 The wizard asks for:
 
 1. **The pair code.** In GitHub, open **Settings → Actions → Runners → New self-hosted runner**
@@ -462,7 +465,7 @@ Everything runs in Docker on any machine. No Proxmox host is needed.
 
 ```bash
 tests/run.sh         # shellcheck + unit tests + 26 end-to-end installer runs
-tests/lxc/run.sh     # inside-the-LXC side for real: Docker, systemd units, image build, runner container, shared cache across two LXCs
+tests/lxc/run.sh     # inside-the-LXC side for real: Docker, systemd units, image build, runner container, shared cache across two LXCs, install.sh host on a plain Debian machine
 ```
 
 - **End-to-end tests** start `install.sh` exactly like the one-liner (`bash -c "$(…)"`) against a
@@ -496,5 +499,6 @@ image/tools/gha-cleanup    disk cleanup inside the runner (hooks, disk guard, jo
 image/tools/gha-patch-runner  keeps the runner on the local actions cache
 image/tools/gha-git-cache     keeps .git between jobs for fast checkouts
 .github/workflows/image.yml   publishes the prebuilt images to GHCR
+docs/install-linux.md      install without Proxmox (any Debian/Ubuntu machine)
 tests/                     unit + end-to-end tests (fake Proxmox) and LXC integration test
 ```
