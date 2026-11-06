@@ -109,6 +109,7 @@ chk "cpu/memory caps applied" 'grep -q "\"NanoCpus\": 2000000000" <<<"$insp" && 
 chk "parallelism hints match the cpu cap" 'grep -q "\"GOMAXPROCS=2\"" <<<"$insp" && grep -q "\"PYTEST_XDIST_AUTO_NUM_WORKERS=2\"" <<<"$insp"'
 chk "runner points at the local actions cache" 'grep -q "\"ACTIONS_RESULTS_URL=$cache_url/\"" <<<"$insp"'
 chk "package caches mounted" 'grep -q "/var/lib/gha-runners/package-cache/cache:/home/runner/.cache" <<<"$insp" && grep -q "\"GOMODCACHE=/home/runner/.cache/go-mod\"" <<<"$insp"'
+chk "tool cache shared by all runners, Go modules writable" 'grep -q "/var/lib/gha-runners/package-cache/toolcache:/opt/hostedtoolcache" <<<"$insp" && grep -q "\"GOFLAGS=-modcacherw\"" <<<"$insp"'
 chk "no PAT/token in container env" '! grep -qE "GITHUB_PAT|GHA_TOKEN" <<<"$insp"'
 docker exec "gha-$name" bash -lc 'id; docker version --format "docker-cli {{.Client.Version}} / daemon {{.Server.Version}}"; sudo -n true && echo sudo-ok' >/tmp/inrunner.log 2>&1
 chk "docker usable from runner container" 'grep -q "daemon" /tmp/inrunner.log'

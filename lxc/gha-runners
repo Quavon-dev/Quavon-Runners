@@ -840,6 +840,8 @@ cmd_caches() {
   # shellcheck source=/dev/null
   [[ -f "${CONF_DIR}/config.env" ]] && source "${CONF_DIR}/config.env"
   local svc
+  # Go keeps its module cache read-only, so setup-go couldn't restore over it.
+  chmod -R u+w "$(cache_root)/package-cache/cache/go-mod" 2>/dev/null || true
   # Caches left on the LXC's own disk from before the shared cache.
   if shared_cache; then
     rm -rf --one-file-system "${STATE_DIR}/actions-cache" "${STATE_DIR}/mirror-cache" "${STATE_DIR}/package-cache"

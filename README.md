@@ -332,7 +332,14 @@ Four caches live in the LXC. They use about 30 MB of RAM together and need no wo
 - **Package caches.** Every runner in the LXC reads and writes the same caches. In ephemeral
   mode they survive the container too, so a fresh container doesn't start empty.
   `GOMODCACHE`, `NUGET_PACKAGES`, `npm_config_store_dir` and `BUN_INSTALL_CACHE_DIR`
-  point into `~/.cache`.
+  point into `~/.cache`. The tool cache (`/opt/hostedtoolcache`, where `setup-node`,
+  `setup-go`, `setup-python` & co. put the versions they download) is shared too, so each
+  version is downloaded once for all runners. `GOFLAGS=-modcacherw` keeps Go's module
+  cache writable, so `setup-go` can restore its cache over it.
+- **Paths per runner.** Every runner has its own workspace path (it contains the runner
+  name), because `container:` jobs need the same path on the LXC. Caches whose paths
+  include the workspace, such as the `target` directory of `Swatinem/rust-cache`, are
+  therefore only restored on the runner that saved them.
 
 From 80% disk all caches are dropped together with unused images (see [Full disk](#full-disk)).
 They refill on the next jobs. `gha-runners doctor` shows their state and size.

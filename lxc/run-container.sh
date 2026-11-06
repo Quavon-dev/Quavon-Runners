@@ -78,10 +78,10 @@ elif [[ "$cache_root" == "$shared" ]]; then
 fi
 if [[ "${SHARED_PACKAGE_CACHE:-1}" != 0 ]]; then
   pkg="$cache_root/package-cache" home=/home/runner
-  install -d -o 1001 -g 1001 "$pkg" "$pkg/cache" "$pkg/npm"
+  install -d -o 1001 -g 1001 "$pkg" "$pkg/cache" "$pkg/npm" "$pkg/toolcache"
   [[ "$cache_root" == "$shared" ]] && cache+=(-e GHA_SHARED_CACHE=1)
-  cache+=(-v "$pkg/cache:$home/.cache" -v "$pkg/npm:$home/.npm"
-          -e "GOMODCACHE=$home/.cache/go-mod" -e "NUGET_PACKAGES=$home/.cache/nuget-packages"
+  cache+=(-v "$pkg/cache:$home/.cache" -v "$pkg/npm:$home/.npm" -v "$pkg/toolcache:/opt/hostedtoolcache"
+          -e "GOMODCACHE=$home/.cache/go-mod" -e GOFLAGS=-modcacherw -e "NUGET_PACKAGES=$home/.cache/nuget-packages"
           -e "npm_config_store_dir=$home/.cache/pnpm-store" -e "BUN_INSTALL_CACHE_DIR=$home/.cache/bun")
 fi
 
