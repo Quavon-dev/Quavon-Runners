@@ -88,8 +88,9 @@ clean_workspaces() {
 }
 
 clean_caches() {
-  local cargo="${CARGO_HOME:-$HOME/.cargo}"
-  sudo rm -rf --one-file-system "$HOME/.cache" "$HOME/.npm" "$HOME/.yarn" "$HOME/.pnpm-store" \
+  local cargo="${CARGO_HOME:-$HOME/.cargo}" home_caches=()
+  [[ "${GHA_SHARED_CACHE:-0}" == 1 ]] || home_caches=("$HOME/.cache" "$HOME/.npm")
+  sudo rm -rf --one-file-system "${home_caches[@]}" "$HOME/.yarn" "$HOME/.pnpm-store" \
     "$HOME/.local/share/pnpm/store" "$HOME/.bun/install/cache" "$HOME/go/pkg/mod" \
     "$cargo/registry" "$cargo/git" "$HOME/.gradle/caches" "$HOME/.m2/repository" "$HOME/.nuget/packages" \
     "${RUNNER_DIR}/_git"

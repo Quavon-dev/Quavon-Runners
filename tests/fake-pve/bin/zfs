@@ -1,4 +1,5 @@
 #!/bin/bash
 source "$(dirname "$0")/_common"; log "zfs $*"
 if [[ "$1" == list ]]; then path="${*: -1}"; echo "${path#/}"; fi
+if [[ "$1" == create ]]; then for a in "$@"; do [[ "$a" == mountpoint=* ]] && mkdir -p "${a#mountpoint=}"; done; fi
 exit 0

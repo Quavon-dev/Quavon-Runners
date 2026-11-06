@@ -66,10 +66,20 @@ if [[ "$(sed -n 's/^GITHUB_URL=//p' "$env_file")" == https://github.com/* ]] \
   && url="$(/usr/local/bin/gha-runners _cache_url)"; then
   cache+=(-e "ACTIONS_RESULTS_URL=${url}")
 fi
-[[ "${GIT_CHECKOUT_CACHE:-1}" != 0 ]] || cache+=(-e GHA_GIT_CACHE=0)
+# With a cache shared by several LXCs (install.sh share-cache) the package and
+# Git caches live there too; jobs must not wipe them for a full local disk.
+cache_root=/var/lib/gha-runners shared=/var/lib/gha-runners/shared
+mountpoint -q "$shared" && cache_root="$shared"
+if [[ "${GIT_CHECKOUT_CACHE:-1}" == 0 ]]; then
+  cache+=(-e GHA_GIT_CACHE=0)
+elif [[ "$cache_root" == "$shared" ]]; then
+  install -d -o 1001 -g 1001 "$shared/git"
+  cache+=(-v "$shared/git:$shared/git" -e "GHA_GIT_SHARED=$shared/git")
+fi
 if [[ "${SHARED_PACKAGE_CACHE:-1}" != 0 ]]; then
-  pkg=/var/lib/gha-runners/package-cache home=/home/runner
+  pkg="$cache_root/package-cache" home=/home/runner
   install -d -o 1001 -g 1001 "$pkg" "$pkg/cache" "$pkg/npm"
+  [[ "$cache_root" == "$shared" ]] && cache+=(-e GHA_SHARED_CACHE=1)
   cache+=(-v "$pkg/cache:$home/.cache" -v "$pkg/npm:$home/.npm"
           -e "GOMODCACHE=$home/.cache/go-mod" -e "NUGET_PACKAGES=$home/.cache/nuget-packages"
           -e "npm_config_store_dir=$home/.cache/pnpm-store" -e "BUN_INSTALL_CACHE_DIR=$home/.cache/bun")

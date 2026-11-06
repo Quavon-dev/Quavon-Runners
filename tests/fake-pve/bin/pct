@@ -11,11 +11,15 @@ case "$cmd" in
   destroy) sed -i "/^$1\$/d" "$S/ids"; echo "destroyed $1" >>"$S/destroyed" ;;
   push) cp "$2" "$S/ct-$1-bootstrap" ;;
   list) echo "VMID       Status     Lock         Name" ;;
-  status) exit 2 ;;
+  status) grep -qx "$1" "$S/ids" || exit 2; echo "status: running" ;;
+  reboot) touch "$S/rebooted-$1"; sleep 0.2 ;;
+  set) [[ "$2" == --mp* ]] && echo "${2#--}: $3" >>"$S/ct-$1.mounts" ;;
   config)
     st="$(grep -A1 -x -- --rootfs "$S/ct-$1.create" 2>/dev/null | tail -n1)"
-    [[ -n "$st" ]] || exit 2
-    echo "rootfs: ${st%%:*}:subvol-$1-disk-0,size=${st##*:}G" ;;
+    if [[ -z "$st" ]]; then grep -qx "$1" "$S/ids" || exit 2; st="local-lvm:8"; fi
+    echo "rootfs: ${st%%:*}:subvol-$1-disk-0,size=${st##*:}G"
+    echo "unprivileged: 1"
+    cat "$S/ct-$1.mounts" 2>/dev/null || true ;;
   exec)
     id="$1"; shift; [[ "$1" == -- ]] && shift
     # install.sh prefixes "env PATH=... LANG=... "; record it, then drop it
@@ -71,6 +75,11 @@ case "$cmd" in
       *"docker load"*) cat >/dev/null; touch "$S/ct-$id-image" ;;
       *"setup.sh start"*) [[ -f "$S/ct-$id-image" ]] || { echo "image missing in $id" >&2; exit 1; }; echo "started" ;;
       *journalctl*) echo "√ Connected to GitHub"; echo "Listening for Jobs" ;;
+      *".gha-job-running"*)
+        flag busy-once && [[ ! -f "$S/busy-done" ]] && { touch "$S/busy-done"; exit 0; }
+        exit 1 ;;
+      *"mountpoint -q"*) flag mount-after-reboot && [[ ! -f "$S/rebooted-$id" ]] && exit 1; exit 0 ;;
+      *"gha-runners update"*) flag update-fail && { echo "E: update broke"; exit 1; }; echo "==> Installing gha-runners CLI and systemd units" ;;
       *) sleep 0.1 ;;
     esac ;;
 esac

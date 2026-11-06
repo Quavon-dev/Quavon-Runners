@@ -3,6 +3,10 @@
 #
 #   bash -c "$(curl -fsSL https://raw.githubusercontent.com/quavon-dev/quavon-docker-runners/main/install.sh)"
 #
+# Existing runner LXCs, one after another, never cancelling a running job:
+#   ... install.sh)" _ update <ctid>...        update them
+#   ... install.sh)" _ share-cache <ctid>...   give them one shared cache, then update
+#
 # Creates a Debian LXC with Docker, registers N GitHub Actions runners using the
 # registration token ("pair code") from GitHub, builds a runner image modeled on
 # GitHub's hosted ubuntu-24.04 image and starts everything as systemd services.
@@ -1194,6 +1198,10 @@ provision_ct() {   # provision_ct <index>
   printf '\n %s[%s/%s] Container %s (%s)%s\n' "$BL" "$(( $1 + 1 ))" "$(ct_count)" "$CTID" "$CUR_HOSTNAME" "$CL"
   create_ct
   disable_zfs_sync
+  if [[ "$LAYOUT" == separate ]]; then
+    prepare_shared_cache "$CTID"
+    attach_shared_cache "$CTID"
+  fi
   setup_firewall
   start_ct
   verify_isolation
@@ -1248,26 +1256,145 @@ finish_all() {
   for id in "${PLAN_IDS[@]}"; do
     step "Starting runners in container ${id}" "Started runners in container ${id}" \
       -- ct "$id" bash "${CT_REPO_DIR}/lxc/setup.sh" start
-    wait_online "$id"
+    wait_online "$id" || true
   done
 }
 
 # The runner prints "Listening for Jobs" once it is connected to GitHub.
-wait_online() {   # wait_online <ctid>
-  local id="$1" name names _ total online
+wait_online() {   # wait_online <ctid> [only log lines since "YYYY-MM-DD HH:MM:SS"]
+  local id="$1" since=(-n 200) name names _ total online
+  [[ -n "${2:-}" ]] && since=(--since "$2")
   names="$(ct "$id" bash -c 'ls /etc/gha-runners/runners/ | sed -n "s/\.env$//p"')"
   total="$(wc -w <<<"$names")"
   msg_info "Waiting for runner(s) in ${id} to connect to GitHub"
   for _ in $(seq 1 45); do
     online=0
     for name in $names; do
-      ct "$id" journalctl -u "gha-runner@${name}" --no-pager -n 200 2>/dev/null \
+      ct "$id" journalctl -u "gha-runner@${name}" --no-pager "${since[@]}" 2>/dev/null \
         | grep -q "Listening for Jobs" && online=$((online + 1))
     done
     if (( online == total )); then msg_ok "Online in GitHub: ${names//$'\n'/, }"; return 0; fi
     sleep 4
   done
   msg_warn "${online}/${total} runner(s) online after 3 min - check: pct exec ${id} -- /usr/local/bin/gha-runners logs <name>"
+  return 1
+}
+
+# ------------------------------------------------------------- shared cache --
+# One directory on the host, bind-mounted into every runner LXC, holds their
+# actions cache, Docker Hub mirror, package and Git caches. On ZFS it is a
+# dataset with a quota; otherwise a directory, if the disk has room for it.
+SHARED_CACHE_HOST="${SHARED_CACHE_HOST:-/var/lib/gha-runners-cache}"
+SHARED_CACHE_CT=/var/lib/gha-runners/shared
+
+ct_conf() { pve 20 pct config "$1"; }
+
+prepare_shared_cache() {   # prepare_shared_cache <ctid>...
+  local id priv="" p volid dataset free
+  for id in "$@"; do
+    ct_conf "$id" | grep -q '^lxc\.idmap' && die "CT ${id} has its own lxc.idmap: a shared cache needs the default ID mapping."
+    p="$(ct_conf "$id" | sed -n 's/^unprivileged: //p')"; p="${p:-0}"
+    [[ -z "$priv" || "$priv" == "$p" ]] || die "CTs $* mix privileged and unprivileged containers: they can't share a cache."
+    priv="$p"
+  done
+  SHARED_CACHE_GB="${SHARED_CACHE_GB:-$(cat "${SHARED_CACHE_HOST}/budget-gb" 2>/dev/null || echo 30)}"
+  valid_posint "$SHARED_CACHE_GB" || die "SHARED_CACHE_GB must be a whole number of GB."
+  dataset="$(zfs list -H -o name,mountpoint 2>/dev/null | awk -v m="$SHARED_CACHE_HOST" '$2 == m { print $1 }' || true)"
+  if [[ ! -d "$SHARED_CACHE_HOST" ]]; then
+    volid="$(ct_conf "$1" | sed -n 's/^rootfs: \([^,]*\).*/\1/p')"
+    if dataset="$(zfs list -H -o name "$(pvesm path "$volid" 2>/dev/null)" 2>/dev/null)" && [[ -n "$dataset" ]]; then
+      dataset="${dataset%%/*}/gha-runners-cache"
+      step "Creating ZFS dataset ${dataset} for the shared cache" "Created ZFS dataset ${dataset}" \
+        -- zfs create -o mountpoint="$SHARED_CACHE_HOST" -o sync=disabled -o atime=off "$dataset"
+    else
+      dataset=""
+      free="$(df -BG --output=avail "${SHARED_CACHE_HOST%/*}" | tail -1 | tr -dc 0-9)"
+      (( free >= SHARED_CACHE_GB + 10 )) || die "${SHARED_CACHE_HOST%/*} has ${free} GB free; the shared cache needs ${SHARED_CACHE_GB} GB plus 10 GB to spare.
+Set SHARED_CACHE_GB lower, or SHARED_CACHE_HOST to a directory on a bigger disk."
+      mkdir -p "$SHARED_CACHE_HOST"
+    fi
+  fi
+  [[ -z "$dataset" ]] || run zfs set quota="${SHARED_CACHE_GB}G" "$dataset"
+  echo "$SHARED_CACHE_GB" >"${SHARED_CACHE_HOST}/budget-gb"
+  chown "$([[ "$priv" == 1 ]] && echo 100000:100000 || echo 0:0)" "$SHARED_CACHE_HOST"
+  chmod 0755 "$SHARED_CACHE_HOST"
+  msg_ok "Shared cache: ${SHARED_CACHE_HOST} (${SHARED_CACHE_GB} GB${dataset:+, ZFS ${dataset}})"
+}
+
+attach_shared_cache() {   # attach_shared_cache <ctid>
+  local id="$1" i=0
+  ct_conf "$id" | grep -q "^mp[0-9]*: ${SHARED_CACHE_HOST},mp=${SHARED_CACHE_CT}" && return 0
+  while ct_conf "$id" | grep -q "^mp${i}:"; do i=$((i + 1)); done
+  step "Mounting the shared cache in CT ${id}" "Mounted the shared cache in CT ${id} (mp${i})" \
+    -- pct set "$id" "--mp${i}" "${SHARED_CACHE_HOST},mp=${SHARED_CACHE_CT}"
+}
+
+# Stops each runner of the LXC as soon as it has no job.
+drain_ct() {   # drain_ct <ctid>
+  local id="$1" n pending=() left
+  read -ra pending <<<"$(ct "$id" bash -c 'ls /etc/gha-runners/runners/ | sed -n "s/\.env$//p"' | xargs)"
+  while true; do
+    left=()
+    for n in "${pending[@]}"; do
+      if ct "$id" test -e "/srv/gha-runners/${n}/.gha-job-running"; then left+=("$n")
+      else ct "$id" systemctl stop "gha-runner@${n}"; fi
+    done
+    pending=("${left[@]}")
+    (( ${#pending[@]} )) || break
+    msg_info "CT ${id}: waiting for running jobs to finish (${pending[*]})"
+    sleep 15
+  done
+  msg_ok "CT ${id}: runners stopped between jobs"
+}
+
+wait_docker() {   # wait_docker <ctid>
+  local _
+  msg_info "Waiting for Docker in CT ${1}"
+  for _ in $(seq 1 60); do
+    ct "$1" systemctl is-active --quiet docker 2>/dev/null && { msg_ok "Docker is up in CT ${1}"; return 0; }
+    sleep 3
+  done
+  die "Docker did not start in CT ${1}"
+}
+
+# install.sh update|share-cache <ctid>...: one LXC after another, so the
+# others keep taking jobs; stops at the first LXC that doesn't come back.
+host_command() {
+  local cmd="$1" id since; shift
+  (( $# )) || die "usage: install.sh ${cmd} <ctid>..."
+  NONINTERACTIVE=1
+  printf ' %sLog: %s%s\n' "$DIM" "$LOG_FILE" "$CL"
+  preflight
+  for id in "$@"; do
+    [[ "$(pve 20 pct status "$id" 2>/dev/null)" == *running* ]] || die "CT ${id} does not exist or is not running."
+    ct "$id" test -x /usr/local/bin/gha-runners || die "CT ${id} has no runners installed by this project."
+  done
+  [[ "$cmd" == share-cache ]] && prepare_shared_cache "$@"
+  for id in "$@"; do
+    printf '\n %sContainer %s%s\n' "$BL" "$id" "$CL"
+    drain_ct "$id"
+    if [[ "$cmd" == share-cache ]]; then
+      attach_shared_cache "$id"
+      if ! ct "$id" mountpoint -q "$SHARED_CACHE_CT"; then
+        step "Restarting CT ${id} to mount the shared cache" "Restarted CT ${id}" -- pct reboot "$id"
+        wait_docker "$id"
+        drain_ct "$id"
+        ct "$id" mountpoint -q "$SHARED_CACHE_CT" || die "The shared cache is not mounted in CT ${id} (pct config ${id})."
+      fi
+    fi
+    since="$(ct "$id" date '+%F %T')"
+    msg_info "Updating CT ${id}" '(^==> |Pulling )'
+    if ! run ct "$id" /usr/local/bin/gha-runners update; then
+      msg_error "Updating CT ${id} failed"
+      show_log_tail
+      run ct "$id" /usr/local/bin/gha-runners start || true
+      exit 1
+    fi
+    msg_ok "Updated CT ${id}"
+    wait_online "$id" "$since" || exit 1
+    ct "$id" /usr/local/bin/gha-runners doctor 2>/dev/null | grep -E '^(shared caches|[a-z]+ cache) ' | sed 's/^/   /' || true
+  done
+  printf '\n %s✔ Done: CT %s%s\n' "$GN" "$*" "$CL"
 }
 
 summary() {
@@ -1303,6 +1430,9 @@ SUMMARY
 }
 
 main() {
+  case "${1:-}" in
+    update|share-cache) host_command "$@"; return ;;
+  esac
   # Running inside an existing installation = update it (helper-script convention).
   if ! command -v pveversion >/dev/null && command -v gha-runners >/dev/null; then
     exec gha-runners update

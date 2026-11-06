@@ -326,8 +326,34 @@ Four caches live in the LXC. They use about 30 MB of RAM together and need no wo
   point into `~/.cache`.
 
 From 80% disk all caches are dropped together with unused images (see [Full disk](#full-disk)).
-They refill on the next jobs. In the `separate` layout every LXC has its own caches.
-`gha-runners doctor` shows their state and size.
+They refill on the next jobs. `gha-runners doctor` shows their state and size.
+
+### One cache for several LXCs
+
+With the `separate` layout the installer gives all its LXCs one shared cache. For LXCs that
+already exist, run on the Proxmox host:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/quavon-dev/quavon-docker-runners/main/install.sh)" _ share-cache 124 128 129 130
+```
+
+- The host keeps the caches in `/var/lib/gha-runners-cache`: a ZFS dataset with a quota
+  when the LXCs are on ZFS, otherwise a directory, if its disk has room. It's mounted
+  into every LXC at `/var/lib/gha-runners/shared` (not included in backups).
+- The size is 30 GB; `SHARED_CACHE_GB=60` in front of the command changes it. From 80%
+  of it, the package and Git caches and the mirror are cleared; the actions cache stays
+  within 40% by itself.
+- Each cache server runs in exactly one LXC, the first that takes its lock. The others
+  forward their ports to it through a Unix socket in the shared directory, so no
+  firewall rule or fixed IP is needed. If that LXC stops, another one takes over within
+  seconds, with the same data.
+- The package caches are shared directly. The Git cache keeps each runner's own copy and
+  puts one copy per repository into the shared directory once a day, so a runner
+  without its own copy doesn't start from scratch.
+- All LXCs need the same `docker0` address (Docker's default `172.17.0.1`).
+- Each LXC is done in turn: its runners stop once their job is finished, the mount is
+  added (a restart only if Proxmox can't add it to the running LXC), then it is updated.
+  The others keep taking jobs. The command stops at the first LXC that doesn't come back.
 
 Turn a cache off in `/etc/gha-runners/config.env`, then run `bash /opt/quavon-docker-runners/lxc/setup.sh files`
 (the runners restart):
@@ -367,6 +393,11 @@ gha-runners update                      # pull latest scripts and image, restart
 ```
 
 Running the install one-liner *inside* an existing runner LXC also does an update.
+To update several LXCs from the Proxmox host, one after another without cancelling jobs:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/quavon-dev/quavon-docker-runners/main/install.sh)" _ update 124 128 129 130
+```
 
 ## Non-interactive install
 
@@ -383,7 +414,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/quavon-dev/quavon-docker
 Other variables: `LAYOUT=shared|separate`, `SIZE=custom` with `RUNNER_CPUS` / `RUNNER_MEM`, `CORES` / `RAM` / `DISK`
 (override the totals), `NET_ISOLATION=internet|lan`, `DNS_SERVERS`, `LAN_ALLOW=10.0.0.5,10.0.10.0/24`,
 `RUNNER_MODE=ephemeral` with `GH_PAT`, `RUNNER_PREFIX`, `RUNNER_GROUP`,
-`CT_HOSTNAME`, `SWAP`, `CPU_UNITS` (CPU priority, 1-10000, default 50), `ZFS_SYNC=disabled|standard`, `BRIDGE`, `NET_IP` / `NET_GW`, `VLAN`, `SSH_KEYS`, `UNPRIVILEGED`,
+`SHARED_CACHE_GB` / `SHARED_CACHE_HOST` (shared cache of the `separate` layout), `CT_HOSTNAME`, `SWAP`, `CPU_UNITS` (CPU priority, 1-10000, default 50), `ZFS_SYNC=disabled|standard`, `BRIDGE`, `NET_IP` / `NET_GW`, `VLAN`, `SSH_KEYS`, `UNPRIVILEGED`,
 `REPO_URL` / `REPO_BRANCH` (forks).
 
 For a private fork, clone it on the Proxmox host and run `./install.sh`. The local
@@ -421,8 +452,8 @@ checkout is copied into the container and nothing is cloned.
 Everything runs in Docker on any machine. No Proxmox host is needed.
 
 ```bash
-tests/run.sh         # shellcheck + unit tests + 24 end-to-end wizard runs
-tests/lxc/run.sh     # inside-the-LXC side for real: Docker, systemd units, image build, runner container
+tests/run.sh         # shellcheck + unit tests + 26 end-to-end installer runs
+tests/lxc/run.sh     # inside-the-LXC side for real: Docker, systemd units, image build, runner container, shared cache across two LXCs
 ```
 
 - **End-to-end tests** start `install.sh` exactly like the one-liner (`bash -c "$(…)"`) against a
@@ -432,6 +463,7 @@ tests/lxc/run.sh     # inside-the-LXC side for real: Docker, systemd units, imag
   - invalid input, runner-name clashes, and a disabled datacenter firewall
   - Docker or AppArmor failures, a leaky firewall, no network, and DHCP handing out the host's IP
   - Esc and Ctrl+C, a dropped session during the image build, a too-small terminal, a hanging `pvesh`, and non-interactive mode
+  - `update` and `share-cache` on existing LXCs: waiting for running jobs, one LXC after another, the mount, and stopping at a failed update
 
   They also check that no token ever appears in a command line or the log.
 - **LXC integration** boots Debian 13 with systemd and runs the real `setup.sh`,

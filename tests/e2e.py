@@ -41,6 +41,7 @@ def reset_host(cluster_fw=True, flags=()):
     if cluster_fw:
         with open("/etc/pve/firewall/cluster.fw", "w") as fh:
             fh.write("[OPTIONS]\nenable: 1\n")
+    shutil.rmtree("/var/lib/gha-runners-cache", ignore_errors=True)
     for f in os.listdir("/tmp"):
         if f.startswith("gha-runners-install-"):
             os.remove(f"/tmp/{f}")
@@ -524,6 +525,58 @@ def case_destroy_mentions_registered_runners():
     out = transcript(c)
     check("Already registered in GitHub (now offline): gha-runners-1 gha-runners-2" in out, "ghost runners not reported")
     check("settings/actions/runners" in out, "no hint where to remove them")
+
+
+def host_command(*args, **extra):
+    r = subprocess.run(["bash", "-c", open(f"{ROOT}/install.sh").read(), "_", *args], cwd="/tmp",
+                       capture_output=True, text=True, timeout=200, env=env(**extra))
+    return r.returncode, clean(r.stdout + r.stderr)
+
+
+def first_call(*parts):
+    lines = calls().splitlines()
+    return next((i for i, line in enumerate(lines) if all(p in line for p in parts)), -1)
+
+
+def existing_cts(*ids):
+    open(f"{STATE}/ids", "w").write("".join(f"{i}\n" for i in ids))
+    for i in ids:
+        open(f"{STATE}/ct-{i}-runners", "w").write(f"r-{i}\n")
+
+
+def case_host_share_cache_then_update():
+    reset_host(flags=["busy-once", "mount-after-reboot"])
+    existing_cts(124, 128)
+    rc, out = host_command("share-cache", "124", "128", SHARED_CACHE_GB=20)
+    check(rc == 0, f"exit {rc}\n{out[-2500:]}")
+    check("zfs create -o mountpoint=/var/lib/gha-runners-cache" in calls() and "zfs set quota=20G local-lvm/gha-runners-cache" in calls(),
+          "shared cache dataset not created with its quota")
+    check(read("/var/lib/gha-runners-cache/budget-gb").strip() == "20", "budget not written for the LXCs")
+    check(os.stat("/var/lib/gha-runners-cache").st_uid == 100000, "shared dir must belong to the unprivileged CTs' root")
+    for ct in ("124", "128"):
+        check(first_call(f"pct set {ct} --mp0 /var/lib/gha-runners-cache,mp=/var/lib/gha-runners/shared") >= 0, f"mount missing for {ct}")
+        check(0 <= first_call("pct exec", ct, "systemctl stop gha-runner@r-" + ct) < first_call(f"pct reboot {ct}")
+              < first_call("pct exec", ct, "gha-runners update"), f"CT {ct}: drain, restart, update out of order")
+    check(first_call("pct exec 124", "gha-runners update") < first_call("pct exec 128", "systemctl stop"),
+          "CT 128 must only be touched after CT 124 is back")
+    check("waiting for running jobs to finish (r-124)" in out, "a busy runner must be waited for")
+    check("Done: CT 124 128" in out, "no final message")
+
+    open(f"{STATE}/calls", "w").close()
+    rc, out = host_command("share-cache", "124", "128")
+    check(rc == 0 and "pct set" not in calls() and "pct reboot" not in calls(), "second share-cache must not mount or restart again")
+    check(read("/var/lib/gha-runners-cache/budget-gb").strip() == "20", "an existing budget must be kept")
+
+
+def case_host_update_stops_at_failure():
+    reset_host(flags=["update-fail"])
+    existing_cts(124, 128)
+    rc, out = host_command("update", "124", "128")
+    check(rc != 0 and "Updating CT 124 failed" in out and "E: update broke" in out, f"failure not reported\n{out[-1500:]}")
+    check(first_call("pct exec 124", "gha-runners start") >= 0, "runners of the failed CT must be started again")
+    check(first_call("pct exec 128", "systemctl stop") == -1, "the next CT must not be touched after a failure")
+    rc, out = host_command("update", "999")
+    check(rc != 0 and "CT 999 does not exist" in out, "unknown CT must be refused")
 
 
 CASES = [v for k, v in sorted(globals().items()) if k.startswith("case_")]

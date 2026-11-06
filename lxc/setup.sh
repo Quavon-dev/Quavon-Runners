@@ -24,7 +24,7 @@ die() { printf '\e[31mERROR:\e[0m %s\n' "$*" >&2; exit 1; }
 setup_docker() {
   log "Installing Docker Engine"
   apt-get update -qq
-  apt-get install -y --no-install-recommends ca-certificates curl gnupg jq git sudo
+  apt-get install -y --no-install-recommends ca-certificates curl gnupg jq git sudo socat
   . /etc/os-release
   install -m 0755 -d /etc/apt/keyrings
   curl -fsSL "https://download.docker.com/linux/${ID}/gpg" | gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
@@ -75,6 +75,7 @@ configure_daemon() {
 setup_files() {
   log "Installing gha-runners CLI and systemd units"
   install -d "$LIB_DIR" "$CONF_DIR" /srv/gha-runners
+  command -v socat >/dev/null || apt-get install -y --no-install-recommends socat >/dev/null
   install -m 0755 "${REPO_DIR}/lxc/run-container.sh" "${LIB_DIR}/run-container.sh"
   install -m 0755 "${REPO_DIR}/lxc/gha-runners" /usr/local/bin/gha-runners
   install -m 0644 "${REPO_DIR}/lxc/seccomp/io-uring.json" "${LIB_DIR}/seccomp-io-uring.json"

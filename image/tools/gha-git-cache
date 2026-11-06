@@ -5,6 +5,9 @@
 #   gha-git-cache save     job-completed: move the workspace's .git to the store
 #   gha-git-cache restore  job-started: move it back into the empty workspace
 #
+# With GHA_GIT_SHARED (a cache shared by several LXCs) a copy goes there at
+# most once a day, and a runner without its own copy starts from that one.
+#
 # A restore keeps only objects, refs and HEAD and writes a fresh config, so
 # hooks, config, submodules and alternates left by earlier jobs never run.
 set -uo pipefail
@@ -16,6 +19,7 @@ ws="${GITHUB_WORKSPACE:-${work}/${repo}/${repo}}"
 ws="${ws%/}"
 [[ "$ws" == "$work"/*/* ]] || exit 0
 store="${RUNNER_DIR}/_git/${GITHUB_REPOSITORY}.git"
+shared="${GHA_GIT_SHARED:+${GHA_GIT_SHARED}/${GITHUB_REPOSITORY}.git}"
 url="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}"
 
 case "${1:-}" in
@@ -25,9 +29,23 @@ case "${1:-}" in
     sudo rm -rf --one-file-system "$store"
     mkdir -p "${store%/*}"
     sudo mv "$ws/.git" "$store"
+    if [[ -n "$shared" ]] && [[ ! -d "$shared" || -n "$(find "$shared" -maxdepth 0 -mmin +1440)" ]]; then
+      sudo mkdir -p "${shared%/*}"
+      if sudo cp -a "$store" "${shared}.new.$$"; then
+        sudo rm -rf --one-file-system "$shared"
+        sudo mv "${shared}.new.$$" "$shared"
+        sudo touch "$shared"
+      fi
+      sudo rm -rf --one-file-system "${shared}.new.$$"
+    fi
     ;;
   restore)
-    [[ -d "$store/objects" && ! -e "$ws/.git" ]] || exit 0
+    [[ ! -e "$ws/.git" ]] || exit 0
+    if [[ ! -d "$store/objects" && -n "$shared" && -d "$shared/objects" ]]; then
+      mkdir -p "${store%/*}"
+      sudo cp -a "$shared" "$store" || sudo rm -rf --one-file-system "$store"
+    fi
+    [[ -d "$store/objects" ]] || exit 0
     sudo find "$store" ! -user runner -exec chown -h runner:runner {} + 2>/dev/null
     find "$store" -mindepth 1 -maxdepth 1 ! -name objects ! -name refs ! -name packed-refs ! -name HEAD ! -name shallow \
       -exec rm -rf --one-file-system {} +
