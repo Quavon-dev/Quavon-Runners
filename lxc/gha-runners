@@ -341,11 +341,12 @@ image_gb() { case "$1" in full) echo 13 ;; full-plus) echo 15 ;; *) echo 3 ;; es
 pull_image() {   # pull_image <flavor> <local tag>
   local registry="${PREBUILT_IMAGE-ghcr.io/quavon-dev/gha-runner}" tree remote
   [[ -n "$registry" ]] || return 1
+  [[ "$(dpkg --print-architecture)" == amd64 ]] || { info "prebuilt images are amd64 only: building locally"; return 1; }
   tree="$(git -c safe.directory="$REPO_DIR" -C "$REPO_DIR" rev-parse HEAD:image 2>/dev/null)" || return 1
   [[ -z "$(git -c safe.directory="$REPO_DIR" -C "$REPO_DIR" status --porcelain -- image 2>/dev/null)" ]] || { info "image/ has local changes: building locally"; return 1; }
   remote="${registry}:$1-${tree}"
   info "Pulling prebuilt ${remote}"
-  docker pull "$remote" || { info "no prebuilt image for these scripts: building locally"; return 1; }
+  docker pull --platform linux/amd64 "$remote" || { info "no prebuilt image for these scripts: building locally"; return 1; }
   docker tag "$remote" "$2"
   docker image rm "$remote" >/dev/null
 }
@@ -561,6 +562,22 @@ trim_shared_caches() {
   fi
 }
 
+# Containers jobs started and never stopped (kind clusters, docker run -d
+# without the workspace) outlive every job. Runners, caches and containers
+# labelled com.quavon.keep=true stay. LEFTOVER_MINUTES in config.env, 0 = off.
+remove_leftover_containers() {
+  local minutes="${LEFTOVER_MINUTES:-1440}" cutoff id name created keep
+  [[ "$minutes" =~ ^[0-9]+$ ]] && (( minutes > 0 )) || return 0
+  cutoff=$(( $(date +%s) - minutes * 60 ))
+  for id in $(docker ps -aq); do
+    read -r name created keep <<<"$(docker inspect -f '{{.Name}} {{.Created}} {{index .Config.Labels "com.quavon.keep"}}' "$id" 2>/dev/null)" || continue
+    [[ "$name" == /gha-* || "$keep" == true ]] && continue
+    (( $(date -d "$created" +%s) <= cutoff )) || continue
+    info "removing ${name#/}: left running by a job since ${created%%.*}"
+    docker rm -f -v "$id" >/dev/null 2>&1 || true
+  done
+}
+
 prune_unused() {   # prune_unused [builder age in hours]
   clear_caches
   remove_stale_builders "${1:-6}"
@@ -578,6 +595,7 @@ cmd_prune() {
     "") ;;
     *) die "usage: gha-runners prune [--all]" ;;
   esac
+  remove_leftover_containers
   docker container prune --force --filter until=24h
   docker network prune --force --filter until=24h
   docker image prune --force --filter until=72h
@@ -585,6 +603,8 @@ cmd_prune() {
   docker builder prune --force --filter until=72h
   docker image ls --filter "label=${IMAGE_LABEL}" --filter dangling=false --format '{{.Repository}}:{{.Tag}}' \
     | grep -vxF "$RUNNER_IMAGE" | xargs -r docker image rm >/dev/null 2>&1 || true
+  # A runner image replaced by an update is never used again.
+  docker image prune --force --filter "label=${IMAGE_LABEL}" >/dev/null
   used="$(disk_used_percent)"
   if [[ "$all" == 1 ]] || (( used >= PRUNE_AT_PERCENT )); then
     info "disk ${used}% used: removing all unused images and build cache"
@@ -878,6 +898,7 @@ cmd_update_image() {
   fi
   cmd_build
   cmd_service restart all
+  docker image prune --force --filter "label=${IMAGE_LABEL}" >/dev/null
 }
 
 usage() {

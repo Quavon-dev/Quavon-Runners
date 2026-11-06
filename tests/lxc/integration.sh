@@ -216,6 +216,23 @@ gha-runners doctor >/tmp/doctor.log 2>&1; rc=$?
 chk "doctor reads the runner's cgroup (rc=$rc)" '[[ $rc == 0 ]] && grep -q "storage driver" /tmp/doctor.log && grep -qE "^$name +[0-9]+%" /tmp/doctor.log'
 gha-runners stop "$name" >/dev/null 2>&1
 docker tag quavon/gha-runner:standard quavon/gha-runner:full
+printf 'FROM busybox\nLABEL com.quavon.gha-runner=true\nLABEL v=1\n' | docker build -q -t quavon/gha-runner:replaced - >/dev/null 2>&1
+printf 'FROM busybox\nLABEL com.quavon.gha-runner=true\nLABEL v=2\n' | docker build -q -t quavon/gha-runner:replaced - >/dev/null 2>&1
+old_runner_images="$(docker images -q --filter dangling=true --filter label=com.quavon.gha-runner | wc -l)"
+gha-runners prune >/tmp/prune.log 2>&1
+chk "prune removes runner images an update replaced, at once" '(( old_runner_images > 0 )) && [[ -z "$(docker images -q --filter dangling=true --filter label=com.quavon.gha-runner)" ]]'
+docker image rm quavon/gha-runner:replaced >/dev/null 2>&1
+docker run -d --name itest-forgotten-cluster busybox sleep 3600 >/dev/null
+docker run -d --name itest-kept --label com.quavon.keep=true busybox sleep 3600 >/dev/null
+docker run -d --name gha-itest-sidecar busybox sleep 3600 >/dev/null
+sleep 61
+docker run -d --name itest-young busybox sleep 3600 >/dev/null
+echo LEFTOVER_MINUTES=1 >>/etc/gha-runners/config.env
+gha-runners prune >/tmp/leftover.log 2>&1
+sed -i '/^LEFTOVER_MINUTES=/d' /etc/gha-runners/config.env
+chk "prune removes containers jobs left running too long" '! docker inspect itest-forgotten-cluster >/dev/null 2>&1 && grep -q "removing itest-forgotten-cluster: left running by a job" /tmp/leftover.log'
+chk "prune keeps young, labelled and gha-* containers" 'docker inspect itest-young itest-kept gha-itest-sidecar >/dev/null 2>&1'
+docker rm -f itest-young itest-kept gha-itest-sidecar >/dev/null 2>&1
 gha-runners prune --all >/tmp/prune.log 2>&1; rc=$?
 chk "prune --all succeeds (rc=$rc)" '[[ $rc == 0 ]]'
 chk "prune keeps the runner image with runners stopped" 'docker image inspect quavon/gha-runner:standard >/dev/null 2>&1'

@@ -96,15 +96,18 @@ repo="$(mktemp -d)"; mkdir -p "$repo/image"; echo a >"$repo/image/f"
 git -C "$repo" init -q && git -C "$repo" add . && git -C "$repo" -c user.email=t@t -c user.name=t commit -qm i
 docker() { echo "docker $*" >>/tmp/docker-calls; }
 info() { :; }
+dpkg() { echo amd64; }
 : >/tmp/docker-calls
 REPO_DIR="$repo" pull_image full quavon/gha-runner:full
-ok "prebuilt pulled by tree hash" 'grep -qx "docker pull ghcr.io/quavon-dev/gha-runner:full-$(git -C "$repo" rev-parse HEAD:image)" /tmp/docker-calls'
+ok "prebuilt pulled by tree hash" 'grep -qx "docker pull --platform linux/amd64 ghcr.io/quavon-dev/gha-runner:full-$(git -C "$repo" rev-parse HEAD:image)" /tmp/docker-calls'
 ok "prebuilt retagged locally" 'grep -q "docker tag ghcr.io/quavon-dev/gha-runner:full-.* quavon/gha-runner:full" /tmp/docker-calls'
 echo b >"$repo/image/f"; : >/tmp/docker-calls
 ok "local changes build locally" '! REPO_DIR="$repo" pull_image full quavon/gha-runner:full && [[ ! -s /tmp/docker-calls ]]'
 ok "PREBUILT_IMAGE= turns pulling off" '! PREBUILT_IMAGE= REPO_DIR="$repo" pull_image full x'
 ok "no git checkout builds locally" '! REPO_DIR=/tmp pull_image full x'
-unset -f docker info
+dpkg() { echo arm64; }; : >/tmp/docker-calls
+ok "other architectures build locally" '! REPO_DIR="$repo" pull_image full x && [[ ! -s /tmp/docker-calls ]]'
+unset -f docker info dpkg
 rm -rf "$repo"
 
 # runner patch: ACTIONS_RESULTS_URL (UTF-16) renamed so the runner keeps ours

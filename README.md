@@ -50,7 +50,7 @@ jobs:
 | Hosted-runner parity | user `runner` (uid 1001) with passwordless `sudo`, `/opt/hostedtoolcache`, `ImageOS=ubuntu24`, so `actions/setup-*` work |
 | Caching | `actions/cache`, `setup-*` caches and BuildKit `type=gha` served from the LXC, Docker Hub pull-through mirror, npm/pip/Go/pnpm/bun/NuGet caches kept between jobs ([Caching](#caching)) |
 | Image | prebuilt on GHCR and pulled, built locally only for changed scripts |
-| Cleanup | containers a job left running (`docker run -d`, `compose up -d`) removed before the next job, workspace wiped, file ownership fixed after container jobs, hourly Docker prune, build cache capped at a quarter of the disk |
+| Cleanup | containers a job left running (`docker run -d`, `compose up -d`) removed before the next job, any other container (e.g. a `kind` cluster) once it has run for 24 hours ([details](#leftover-containers)), workspace wiped, file ownership fixed after container jobs, hourly Docker prune, build cache capped at a quarter of the disk |
 | Full disk | 10% of the disk is held back from jobs, so a full disk can always be cleaned up (see [Full disk](#full-disk)) |
 
 ### Image flavors
@@ -254,6 +254,15 @@ pct set <CTID> --cores 8 --memory 16384     # LXC totals (on the Proxmox host)
 pct set <CTID> --cpuunits 50                # CPU priority, e.g. for runners installed before it was set
 pct resize <CTID> rootfs +10G               # grow the disk (on the Proxmox host)
 ```
+
+### Leftover containers
+
+Containers a job starts for its workspace (`docker run -d`, `compose up -d`) are removed
+before the runner's next job. Others can't be tied to a job, such as a `kind` cluster or a
+`docker run -d` without the workspace, so the hourly prune removes them, with their
+anonymous volumes, once they have run for 24 hours. No job runs that long.
+Runners, cache servers and containers labelled `com.quavon.keep=true` are never removed.
+Change the age with `LEFTOVER_MINUTES` in `/etc/gha-runners/config.env` (`0` turns it off).
 
 ### Full disk
 
