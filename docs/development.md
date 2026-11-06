@@ -51,6 +51,12 @@ docs/                      documentation; docs/assets/ holds the README visuals
 tests/                     unit + end-to-end tests (fake Proxmox) and LXC integration test
 ```
 
+## Releases
+
+Push a tag `vX.Y.Z` on `main`. `.github/workflows/release.yml` creates the GitHub release
+with `install.sh` pinned to that tag, the source archive, `SHA256SUMS` and the Sigstore
+provenance bundle (`provenance.sigstore.json`).
+
 ## Docs visuals
 
 `docs/assets/banner.svg` and `docs/assets/architecture.svg` follow the quavon.de style
