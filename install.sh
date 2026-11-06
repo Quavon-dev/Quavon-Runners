@@ -1349,7 +1349,7 @@ drain_ct() {   # drain_ct <ctid>
   while true; do
     left=()
     for n in "${pending[@]}"; do
-      if ct "$id" test -e "/srv/gha-runners/${n}/.gha-job-running"; then left+=("$n")
+      if ct "$id" bash -c "test -e \"\$(sed -n 's/^RUNNER_DIR=//p' /etc/gha-runners/runners/${n}.env)/.gha-job-running\""; then left+=("$n")
       else ct "$id" systemctl stop "gha-runner@${n}"; fi
     done
     pending=("${left[@]}")

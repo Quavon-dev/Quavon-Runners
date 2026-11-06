@@ -28,11 +28,14 @@ speedup = hosted / self-hosted, above 1 means self-hosted is faster:
 
 Why Go and Rust are still slower in parallel:
 
-- **Their build caches only help on the runner that wrote them.** Every runner has its own
-  workspace path, `go build` hashes the source directory into its cache keys (without
-  `-trimpath`), and `Swatinem/rust-cache` keys on the path of `target/`. On GitHub the path
-  is always the same. `go build ./...` took 4 s hosted, 8 s on the runner that built caddy
-  before and 26–41 s on the others.
+- **Their build caches only helped on the runner that wrote them.** In both rounds every
+  runner had its own workspace path (it contained the runner name), `go build` hashes the
+  source directory into its cache keys (without `-trimpath`), and `Swatinem/rust-cache` keys
+  on the path of `target/`. On GitHub the path is always the same. `go build ./...` took 4 s
+  hosted, 8 s on the runner that built caddy before and 26–41 s on the others. Since then,
+  every runner that has an LXC of its own works in `/srv/gha-runners/r1`, so these caches
+  hit on every such runner (see [Caching](caching.md)); the next round will
+  measure it.
 - **CPU.** CPU-bound steps (tests, uncached compiles) took about twice as long with four jobs
   on the 6-core desktop CPU as on GitHub's EPYC/Xeon cores, and were level with one job at a
   time.

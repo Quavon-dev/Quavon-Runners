@@ -59,6 +59,16 @@ runner_names() {
   done
 }
 
+# Runner directories are slots (r1, r2 ...), not names: a lone runner then has
+# the same paths on every LXC, so caches keyed on absolute paths hit everywhere.
+is_slot_dir() { [[ "$1" =~ ^${RUNNERS_ROOT}/r[1-9][0-9]*$ ]]; }
+
+free_slot_dir() {
+  local n=1
+  while [[ -e "${RUNNERS_ROOT}/r${n}" ]] || grep -qsx "RUNNER_DIR=${RUNNERS_ROOT}/r${n}" "${RUNNERS_CONF}"/*.env; do n=$((n + 1)); done
+  echo "${RUNNERS_ROOT}/r${n}"
+}
+
 require_runner() {
   [[ -f "${RUNNERS_CONF}/$1.env" ]] || die "unknown runner '$1' (see: gha-runners list)"
 }
@@ -235,8 +245,7 @@ cmd_add() {
     valid_token "$token" || die "registration token looks invalid"
   fi
 
-  local dir="${RUNNERS_ROOT}/${name}"
-  [[ ! -e "${dir}/.runner" ]] || die "${dir} already holds a registered runner"
+  local dir; dir="$(free_slot_dir)"
   install_runner_binaries "$dir"
 
   if [[ "$ephemeral" == 0 ]]; then
@@ -992,6 +1001,23 @@ cmd_update() {
   exec /usr/local/bin/gha-runners _update_image
 }
 
+migrate_runner_dirs() {
+  local name dir new
+  for name in $(runner_names); do
+    dir="$(env_get "$name" RUNNER_DIR)"
+    if is_slot_dir "$dir" || [[ ! -d "$dir" ]]; then continue; fi
+    if [[ -e "${dir}/.gha-job-running" ]] && systemctl is-active --quiet "gha-runner@${name}.service"; then
+      warn "runner '${name}' is running a job: stays in ${dir} until the next update"
+      continue
+    fi
+    systemctl stop "gha-runner@${name}.service"
+    new="$(free_slot_dir)"
+    mv -T "$dir" "$new"
+    sed -i "s|^RUNNER_DIR=.*|RUNNER_DIR=${new}|" "${RUNNERS_CONF}/${name}.env"
+    info "runner '${name}' moved from ${dir} to ${new}"
+  done
+}
+
 # The second half of `update`. The containerd image store keeps every image
 # twice, so an old + new image wouldn't fit next to each other: switch the
 # store first (which builds the image once), otherwise just rebuild.
@@ -1001,6 +1027,7 @@ cmd_update_image() {
     warn "Docker uses the containerd image store; not switching, it would delete every image and container (gha-runners migrate-storage)"
   elif storage_is_containerd; then
     info "Docker uses the containerd image store: switching to the classic store first"
+    migrate_runner_dirs
     cmd_migrate_storage --yes
     return
   fi
@@ -1010,6 +1037,7 @@ cmd_update_image() {
     docker image rm "$RUNNER_IMAGE" >/dev/null 2>&1 || true
   fi
   cmd_build
+  migrate_runner_dirs
   cmd_service restart all
   docker image prune --force --filter "label=${IMAGE_LABEL}" >/dev/null
 }
