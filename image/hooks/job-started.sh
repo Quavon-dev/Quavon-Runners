@@ -37,4 +37,6 @@ if [[ "${RUNNER_EPHEMERAL:-0}" != 1 && -d "$work" ]]; then
   fi
 fi
 /usr/local/bin/gha-git-cache restore
+# Swatinem/rust-cache deletes the toolchain binaries from CARGO_HOME/bin after a job.
+[[ -d /opt/gha/cargo-bin ]] && cp -an /opt/gha/cargo-bin/. /usr/share/rust/.cargo/bin/ 2>/dev/null
 exit 0

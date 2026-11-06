@@ -14,3 +14,4 @@ as_runner env RUSTUP_HOME="$RUSTUP_HOME" CARGO_HOME="$CARGO_HOME" \
 add_env RUSTUP_HOME "$RUSTUP_HOME"
 add_env CARGO_HOME "$CARGO_HOME"
 add_path "$CARGO_HOME/bin"
+cp -a "$CARGO_HOME/bin" /opt/gha/cargo-bin
