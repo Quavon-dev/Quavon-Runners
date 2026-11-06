@@ -27,21 +27,27 @@ section() { printf '\n== %s\n' "$*"; }
 in_ct() { docker exec "$1" bash -c "$2"; }
 wait_for() { local _; for _ in $(seq 1 "$1"); do eval "$2" && return 0; sleep 1; done; return 1; }
 serves() { in_ct "$1" "docker inspect -f '{{.State.Running}}' gha-cache-$2 2>/dev/null | grep -qx true"; }
-health() { in_ct "$1" 'curl -fsS -o /dev/null --max-time 3 "http://$(ip -4 -o addr show docker0 | awk "{ sub(\"/.*\", \"\", \$4); print \$4 }"):29171/health"'; }
+health() { in_ct "$1" 'curl -fsS -o /dev/null --max-time 3 "http://$(ip -4 -o addr show docker0 | awk "{ sub(\"/.*\", \"\", \$4); print \$4 }"):'"${2:-29171/health}"'"'; }
+SERVICES="actions mirror apt ghcr quay mcr"
+serves_all() { local s; for s in $SERVICES; do serves "$1" "$s" || return 1; done; }
+serves_none() { local s; for s in $SERVICES; do ! serves "$1" "$s" || return 1; done; }
 
 section "shared cache: one LXC serves, the other forwards"
 in_ct "$A" "echo 2 >/shared/budget-gb"
 in_ct "$A" "mkdir -p $SH && mount --bind /shared $SH && gha-runners _caches"
-wait_for 30 'serves "$A" actions && serves "$A" mirror'
+wait_for 60 'serves_all "$A"'
 in_ct "$B" "mkdir -p $SH && mount --bind /shared $SH && gha-runners _caches"
-chk "A serves the actions cache and the mirror" 'serves "$A" actions && serves "$A" mirror'
+chk "A serves every cache" 'serves_all "$A"'
 chk "A's caches live in the shared directory" 'in_ct "$A" "test -S $SH/run/actions.sock && test -e $SH/actions-cache/cache.db"'
 chk "A's old local caches are gone" 'in_ct "$A" "! test -e /var/lib/gha-runners/actions-cache && ! test -e /var/lib/gha-runners/mirror-cache"'
 chk "B reaches the actions cache through the shared socket" 'wait_for 20 "health $B"'
-chk "B runs no cache server of its own" '! serves "$B" actions && ! serves "$B" mirror'
+chk "B reaches the apt proxy and the mirrors through the shared sockets" 'health "$B" 29173/health && health "$B" 29174/v2/ && health "$B" 29175/v2/ && health "$B" 29176/v2/'
+chk "B runs no cache server of its own" 'serves_none "$B"'
 in_ct "$B" "docker image rm busybox >/dev/null 2>&1; docker pull -q busybox >/dev/null"
 chk "B's Docker pulls go through the shared mirror" 'in_ct "$A" "find $SH/mirror-cache -type f -name data | grep -q ."'
 in_ct "$B" "gha-runners doctor" >/tmp/doctor-b.log 2>&1
+in_ct "$B" "(source <(sed '\$d' /usr/local/bin/gha-runners); load_config; pull_through_mirror ghcr.io/containerd/busybox:1.36)" >/tmp/ghcr-b.log 2>&1
+chk "B pulls ghcr.io images through the shared ghcr mirror" 'in_ct "$B" "docker image inspect ghcr.io/containerd/busybox:1.36 >/dev/null" && in_ct "$A" "test -d $SH/ghcr-cache/docker/registry/v2/repositories/containerd/busybox"' || tail -5 /tmp/ghcr-b.log
 chk "doctor in B shows the shared caches" 'grep -q "shared caches" /tmp/doctor-b.log && grep -q "actions cache  : active, .*served by another LXC" /tmp/doctor-b.log'
 
 section "failover"
@@ -50,6 +56,10 @@ chk "B takes over when A's server stops" 'wait_for 30 "serves $B actions"'
 chk "B serves the cache A wrote (same database)" 'wait_for 20 "health $B" && in_ct "$B" "test -e $SH/actions-cache/cache.db"'
 in_ct "$A" "systemctl start gha-runners-cache@actions"
 chk "A forwards to B after its restart" 'wait_for 20 "health $A" && ! serves "$A" actions'
+in_ct "$A" "systemctl stop gha-runners-cache@apt"
+chk "B takes over the apt proxy" 'wait_for 30 "serves $B apt" && wait_for 20 "health $B 29173/health"'
+in_ct "$A" "systemctl start gha-runners-cache@apt"
+chk "A forwards apt to B after its restart" 'wait_for 20 "health $A 29173/health" && ! serves "$A" apt'
 
 section "runner container in shared mode"
 in_ct "$A" '
@@ -82,11 +92,12 @@ in_ct "$A" "docker exec $genv -e RUNNER_DIR=$d/other -e GITHUB_WORKSPACE=$d/othe
 chk "a runner without its own copy starts from the shared one" 'tail -1 /tmp/shared-git.log | grep -qx 1' || tail -5 /tmp/shared-git.log
 
 section "budget"
-in_ct "$A" "echo 1 >/shared/budget-gb && fallocate -l 900M $SH/package-cache/cache/big"
+in_ct "$A" "echo 1 >/shared/budget-gb && fallocate -l 900M $SH/package-cache/cache/big && touch $SH/apt-cache/itest-marker"
 in_ct "$B" "gha-runners prune" >/tmp/prune-b.log 2>&1
 chk "over 80% of the budget the package and Git caches are cleared" 'in_ct "$A" "! test -e $SH/package-cache/cache/big && ! test -e $SH/git/o"'
-chk "the mirror is only cleared by the LXC serving it" 'in_ct "$A" "find $SH/mirror-cache -type f -name data | grep -q ."'
-chk "B keeps the cache server images for a takeover" 'in_ct "$B" "docker image inspect gha-runners/cache-actions:pinned gha-runners/cache-mirror:pinned >/dev/null"'
+chk "the mirrors are only cleared by the LXC serving them" 'in_ct "$A" "find $SH/mirror-cache $SH/ghcr-cache -type f -name data | grep -q ."'
+chk "B clears the apt cache it serves and serves it again" 'in_ct "$A" "! test -e $SH/apt-cache/itest-marker" && wait_for 30 "serves $B apt"'
+chk "B keeps the cache server images for a takeover" 'in_ct "$B" "docker image inspect gha-runners/cache-actions:pinned gha-runners/cache-mirror:pinned gha-runners/cache-apt:pinned gha-runners/cache-ghcr:pinned >/dev/null"'
 chk "the actions cache stays" 'in_ct "$A" "test -e $SH/actions-cache/cache.db"'
 
 printf '\nshared cache: %s passed, %s failed\n' "$pass" "$fail"

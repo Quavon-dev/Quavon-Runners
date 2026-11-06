@@ -62,7 +62,8 @@ RUN /opt/gha/build/run-step.sh 99-finalize   "$FLAVOR"
 
 COPY --chmod=0755 entrypoint.sh /opt/gha/entrypoint.sh
 COPY --chmod=0755 hooks/ /opt/gha/hooks/
-COPY --chmod=0755 tools/gha-cleanup tools/gha-patch-runner tools/gha-git-cache /usr/local/bin/
+COPY --chmod=0755 tools/gha-cleanup tools/gha-patch-runner tools/gha-git-cache tools/gha-apt-proxy /usr/local/bin/
+RUN echo 'Acquire::http::Proxy-Auto-Detect "/usr/local/bin/gha-apt-proxy";' >/etc/apt/apt.conf.d/01gha-apt-proxy
 
 USER runner
 WORKDIR /home/runner

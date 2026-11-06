@@ -69,11 +69,25 @@ chk "actions cache answers on docker0" 'curl -fsS -o /dev/null "$cache_url/healt
 chk "actions cache reachable from a bridge container" 'docker run --rm busybox wget -qO /dev/null "$cache_url/health"'
 chk "actions cache rejects requests without a job token" '[[ $(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d "{}" "$cache_url/twirp/github.actions.results.api.v1.CacheService/GetCacheEntryDownloadURL") == 401 ]]'
 chk "actions cache not on loopback" '! curl -fsS -o /dev/null --max-time 2 http://127.0.0.1:29171/health'
-chk "docker hub mirror configured" 'jq -e ".\"registry-mirrors\" == [\"http://127.0.0.1:29172\"]" /etc/docker/daemon.json >/dev/null'
+chk "docker hub mirror configured" 'jq -e ".\"registry-mirrors\" == [\"http://${bip}:29172\"]" /etc/docker/daemon.json >/dev/null'
+chk "docker trusts the ghcr.io mirror over http" 'jq -e ".\"insecure-registries\" == [\"${bip}:29174\"]" /etc/docker/daemon.json >/dev/null'
+for port in 29172 29174 29175 29176; do
+  for _ in $(seq 1 60); do curl -fsS -o /dev/null "http://${bip}:${port}/v2/" 2>/dev/null && break; sleep 1; done
+done
+chk "registry mirrors answer on docker0" '(for p in 29172 29174 29175 29176; do curl -fsS -o /dev/null "http://${bip}:$p/v2/" || exit 1; done)'
+chk "apt proxy answers on docker0" 'curl -fsS -o /dev/null "http://${bip}:29173/health"'
+chk "mirrors reachable from a bridge container" 'docker run --rm busybox sh -c "wget -qO /dev/null http://${bip}:29172/v2/ && wget -qO /dev/null http://${bip}:29174/v2/ && wget -qO /dev/null http://${bip}:29173/health"'
+chk "no cache on loopback or all interfaces" '! ss -ltnH | awk "{ print \$4 }" | grep -E ":2917[0-9]$" | grep -qv "^${bip}:"'
 docker image rm busybox >/dev/null 2>&1; docker pull -q busybox >/dev/null 2>&1
 chk "docker pulls go through the mirror" '[[ -n "$(find /var/lib/gha-runners/mirror-cache -type f -name data | head -1)" ]]'
-chk "mirror not reachable from outside the LXC" '! ss -ltn | grep -q "0.0.0.0:29172"'
-docker stats --no-stream --format '     {{.Name}}: {{.MemUsage}}' gha-cache-actions gha-cache-mirror
+(source <(sed '$d' /usr/local/bin/gha-runners); load_config; pull_through_mirror ghcr.io/containerd/busybox:1.36) >/tmp/ghcr.log 2>&1; rc=$?
+chk "ghcr.io image pulled through the ghcr mirror (rc=$rc)" '[[ $rc == 0 ]] && docker image inspect ghcr.io/containerd/busybox:1.36 >/dev/null && [[ -d /var/lib/gha-runners/ghcr-cache/docker/registry/v2/repositories/containerd/busybox ]]'
+chk "the mirror's name is not left behind" '! docker images --format "{{.Repository}}" | grep -q 29174'
+accept="Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json"
+chk "quay.io and mcr.microsoft.com mirrors fetch manifests" 'curl -fsS -o /dev/null -H "$accept" "http://${bip}:29175/v2/prometheus/busybox/manifests/latest" && curl -fsS -o /dev/null -H "$accept" "http://${bip}:29176/v2/mcr/hello-world/manifests/latest"'
+curl -s -D /tmp/private.h -o /dev/null -H "Authorization: Basic aXRlc3Q6c2VjcmV0" "http://${bip}:29174/v2/quavon-dev/itest-private/manifests/latest"
+chk "mirrors never ask for credentials and serve nothing private" 'grep -q "^HTTP/1.1 404" /tmp/private.h && ! grep -qi "^www-authenticate" /tmp/private.h'
+docker stats --no-stream --format '     {{.Name}}: {{.MemUsage}}' gha-cache-actions gha-cache-mirror gha-cache-apt gha-cache-ghcr gha-cache-quay gha-cache-mcr
 
 section "gha-runners build (real image build, standard)"
 start=$SECONDS
@@ -110,6 +124,7 @@ chk "parallelism hints match the cpu cap" 'grep -q "\"GOMAXPROCS=2\"" <<<"$insp"
 chk "runner points at the local actions cache" 'grep -q "\"ACTIONS_RESULTS_URL=$cache_url/\"" <<<"$insp"'
 chk "package caches mounted" 'grep -q "/var/lib/gha-runners/package-cache/cache:/home/runner/.cache" <<<"$insp" && grep -q "\"GOMODCACHE=/home/runner/.cache/go-mod\"" <<<"$insp"'
 chk "tool cache shared by all runners, Go modules writable" 'grep -q "/var/lib/gha-runners/package-cache/toolcache:/opt/hostedtoolcache" <<<"$insp" && grep -q "\"GOFLAGS=-modcacherw\"" <<<"$insp"'
+chk "runner gets the registry mirrors for buildx" 'grep -q "\"GHA_REGISTRY_MIRRORS=docker.io=${bip}:29172 ghcr.io=${bip}:29174 quay.io=${bip}:29175 mcr.microsoft.com=${bip}:29176\"" <<<"$insp"'
 chk "no PAT/token in container env" '! grep -qE "GITHUB_PAT|GHA_TOKEN" <<<"$insp"'
 docker exec "gha-$name" bash -lc 'id; docker version --format "docker-cli {{.Client.Version}} / daemon {{.Server.Version}}"; sudo -n true && echo sudo-ok' >/tmp/inrunner.log 2>&1
 chk "docker usable from runner container" 'grep -q "daemon" /tmp/inrunner.log'
@@ -125,6 +140,28 @@ journalctl -u "gha-runner@$name" --no-pager -n 80 >/tmp/runner-journal.log
 chk "env.sh captured image PATH for jobs" 'grep -q /opt/pipx_bin "$dir/.path"'
 chk "runner process actually launched (Runner.Listener)" 'grep -qiE "Runner|Listener|Connected|credentials|Error" /tmp/runner-journal.log'
 grep -iE "listening|connected|error|exception" /tmp/runner-journal.log | head -4 | sed 's/^/     /'
+
+section "apt proxy in the runner"
+chk "apt uses the proxy for http repositories" '[[ $(docker exec "gha-$name" /usr/local/bin/gha-apt-proxy http://archive.ubuntu.com/ubuntu/) == "http://${bip}:29173" ]]'
+chk "https repositories and IP addresses go direct" '[[ $(docker exec "gha-$name" /usr/local/bin/gha-apt-proxy https://download.docker.com/linux/) == DIRECT && $(docker exec "gha-$name" /usr/local/bin/gha-apt-proxy http://10.0.0.1/debian/) == DIRECT ]]'
+docker exec "gha-$name" bash -c 'sudo apt-get update -q && sudo apt-get install -y -q --download-only cowsay && sudo apt-get clean' >/tmp/apt.log 2>&1; rc=$?
+chk "apt-get through the proxy (rc=$rc)" '[[ $rc == 0 ]] && [[ -n "$(find /var/lib/gha-runners/apt-cache -type f | head -1)" ]]' || tail -5 /tmp/apt.log
+systemctl stop gha-runners-cache@apt
+chk "proxy stopped: apt goes direct" '[[ $(docker exec "gha-$name" /usr/local/bin/gha-apt-proxy http://archive.ubuntu.com/ubuntu/) == DIRECT ]]'
+docker exec "gha-$name" bash -c 'sudo apt-get update -q && sudo apt-get install -y -q --download-only cowsay && sudo apt-get clean' >/tmp/apt.log 2>&1; rc=$?
+chk "proxy stopped: apt-get still works (rc=$rc)" '[[ $rc == 0 ]]' || tail -5 /tmp/apt.log
+systemctl start gha-runners-cache@apt
+
+section "buildx builders use the mirrors"
+docker exec "gha-$name" bash -c "
+  set -e
+  docker buildx create --name builder-itest --driver docker-container --buildkitd-flags '--allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host' --use
+  docker buildx inspect --bootstrap builder-itest
+  printf 'FROM alpine:3.20\nFROM ghcr.io/containerd/alpine:3.14.0\nCOPY --from=0 /etc/alpine-release /hub\nRUN cat /hub\n' | docker buildx build --builder builder-itest -" >/tmp/buildx.log 2>&1; rc=$?
+chk "builder created like setup-buildx-action got the mirror config" 'docker exec buildx_buildkit_builder-itest0 cat /etc/buildkit/buildkitd.toml 2>/dev/null | grep -q "${bip}:29174"'
+chk "builder pulls Docker Hub images through the mirror (rc=$rc)" '[[ $rc == 0 && -d /var/lib/gha-runners/mirror-cache/docker/registry/v2/repositories/library/alpine ]]' || tail -15 /tmp/buildx.log
+chk "builder pulls ghcr.io images through the ghcr mirror" '[[ -d /var/lib/gha-runners/ghcr-cache/docker/registry/v2/repositories/containerd/alpine ]]'
+docker exec "gha-$name" docker buildx rm builder-itest >/dev/null 2>&1
 
 section "job hooks"
 docker exec "gha-$name" bash -c "sudo mkdir -p $dir/_work/_temp && sudo touch $dir/_work/_temp/root-file"
@@ -195,7 +232,8 @@ chk "full disk: reserve released" '[[ ! -e /var/lib/gha-runners/disk-reserve ]]'
 chk "full disk: unused images removed" '! docker image inspect busybox >/dev/null 2>&1'
 chk "full disk: leftover buildx builder and its cache removed" '! docker inspect buildx_buildkit_itest0 >/dev/null 2>&1 && ! docker volume inspect buildx_buildkit_itest0_state >/dev/null 2>&1'
 chk "full disk: caches dropped" '[[ ! -e /var/lib/gha-runners/package-cache/cache/itest-pkg ]]'
-chk "full disk: cache services back up" 'systemctl is-active --quiet gha-runners-cache@actions && systemctl is-active --quiet gha-runners-cache@mirror'
+chk "full disk: cache services back up" '(for s in actions mirror apt ghcr quay mcr; do systemctl is-active --quiet gha-runners-cache@$s || exit 1; done)'
+chk "full disk: mirror and apt caches dropped" '[[ ! -e /var/lib/gha-runners/ghcr-cache/docker && -z "$(find /var/lib/gha-runners/apt-cache -type f 2>/dev/null)" ]]'
 chk "full disk: runner image kept" 'docker image inspect quavon/gha-runner:standard >/dev/null 2>&1'
 chk "full disk: idle runner cleaned without Docker too" '[[ ! -e $dir/_work/old-repo2 ]]'
 chk "full disk: idle runner cleaned by gha-cleanup" '[[ ! -e $dir/_work/old-repo ]] && grep -q "$name: gha-cleanup: freed" /tmp/guard.log'
@@ -215,6 +253,7 @@ sleep 6
 chk "cpu cap above the LXC's cores is clamped" 'docker inspect gha-$name 2>/dev/null | grep -q "\"NanoCpus\": $(nproc)000000000"'
 gha-runners doctor >/tmp/doctor.log 2>&1; rc=$?
 chk "doctor reads the runner's cgroup (rc=$rc)" '[[ $rc == 0 ]] && grep -q "storage driver" /tmp/doctor.log && grep -qE "^$name +[0-9]+%" /tmp/doctor.log'
+chk "doctor shows every cache" '(for s in actions mirror apt ghcr quay mcr; do grep -qE "^$s cache +: active" /tmp/doctor.log || exit 1; done)'
 gha-runners stop "$name" >/dev/null 2>&1
 docker tag quavon/gha-runner:standard quavon/gha-runner:full
 printf 'FROM busybox\nLABEL com.quavon.gha-runner=true\nLABEL v=1\n' | docker build -q -t quavon/gha-runner:replaced - >/dev/null 2>&1

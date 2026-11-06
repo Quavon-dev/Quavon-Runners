@@ -66,6 +66,8 @@ if [[ "$(sed -n 's/^GITHUB_URL=//p' "$env_file")" == https://github.com/* ]] \
   && url="$(/usr/local/bin/gha-runners _cache_url)"; then
   cache+=(-e "ACTIONS_RESULTS_URL=${url}")
 fi
+mirrors="$(/usr/local/bin/gha-runners _registry_mirrors)"
+[[ -n "$mirrors" ]] && cache+=(-e "GHA_REGISTRY_MIRRORS=${mirrors}")
 # With a cache shared by several LXCs (install.sh share-cache) the package and
 # Git caches live there too; jobs must not wipe them for a full local disk.
 cache_root=/var/lib/gha-runners shared=/var/lib/gha-runners/shared
