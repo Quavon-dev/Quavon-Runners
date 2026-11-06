@@ -45,7 +45,7 @@ Run it locally when you change `lxc/`, the systemd units or the image.
   give every job least-privilege `permissions:`, and use `persist-credentials: false`
   on checkout.
 - Never commit secrets, tokens or real credentials, including in tests and examples.
-- Add or update tests for behaviour changes, and update the README when user-facing
+- Add or update tests for behaviour changes, and update the docs (README.md or docs/) when user-facing
   behaviour changes.
 
 ## Pull requests
