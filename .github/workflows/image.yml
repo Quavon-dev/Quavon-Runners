@@ -21,6 +21,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
+      attestations: write
     strategy:
       fail-fast: false
       matrix:
@@ -51,13 +53,25 @@ jobs:
             -t "${IMAGE}:${FLAVOR}-${tree}" -t "${IMAGE}:${FLAVOR}" image
 
       - name: Push
+        id: push
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin <<<"$GH_TOKEN"
           for attempt in 1 2 3; do
-            docker push --all-tags "$IMAGE" && exit 0
+            if docker push --all-tags "$IMAGE"; then
+              digest="$(docker buildx imagetools inspect "${IMAGE}:${FLAVOR}" --format '{{json .Manifest}}' | jq -r .digest)"
+              echo "digest=${digest}" >>"$GITHUB_OUTPUT"
+              exit 0
+            fi
             echo "push failed (attempt ${attempt}), retrying"
             sleep $((attempt * 20))
           done
           exit 1
+
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+          create-storage-record: false

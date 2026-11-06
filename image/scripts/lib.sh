@@ -32,6 +32,18 @@ gh_latest_tag() {
   echo "${url##*/tag/}"
 }
 
+# fetch <url> <sha256> -> path of the verified download
+fetch() {
+  local out
+  out="${work:-/tmp}/$(basename "$1")"
+  curl -fsSL --retry 4 --retry-all-errors -o "$out" "$1"
+  echo "$2  $out" | sha256sum -c --quiet - || die "checksum mismatch: $1"
+  echo "$out"
+}
+
+# First field of a published checksum file.
+sha_of() { curl -fsSL "$1" | awk '{print $1; exit}'; }
+
 # add_apt_repo <name> <key-url> <deb-line-without-signed-by>
 add_apt_repo() {
   local name="$1" key_url="$2" line="$3" keyring="/etc/apt/keyrings/$1.gpg"

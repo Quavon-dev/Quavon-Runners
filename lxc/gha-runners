@@ -129,16 +129,24 @@ latest_runner_version() {
 
 # Extract the official runner into <dir> (owned by the runner user).
 install_runner_binaries() {
-  local dir="$1" version arch tarball
-  version="$(latest_runner_version)"; arch="$(runner_arch)"
-  tarball="${CACHE_DIR}/actions-runner-linux-${arch}-${version}.tar.gz"
+  local dir="$1" version arch name tarball sha
+  version="${RUNNER_VERSION:-$(latest_runner_version)}"; version="${version#v}"; arch="$(runner_arch)"
+  name="actions-runner-linux-${arch}-${version}.tar.gz"
+  tarball="${CACHE_DIR}/${name}"
+  sha="$(curl -fsSL "https://api.github.com/repos/actions/runner/releases/tags/v${version}" | jq -r --arg n "$name" --arg a "linux-${arch}" '
+    ([.assets[] | select(.name == $n) | .digest // empty][0] // "" | ltrimstr("sha256:")) as $d
+    | if $d != "" then $d else (.body | capture("BEGIN SHA " + $a + " -->(?<s>[0-9a-f]{64})").s) end')" \
+    || die "cannot read the published SHA-256 of actions/runner v${version}"
   install -d "$CACHE_DIR"
   if [[ ! -s "$tarball" ]]; then
     info "Downloading actions/runner v${version} (${arch})"
-    curl -fsSL -o "${tarball}.part" \
-      "https://github.com/actions/runner/releases/download/v${version}/actions-runner-linux-${arch}-${version}.tar.gz"
+    curl -fsSL -o "${tarball}.part" "https://github.com/actions/runner/releases/download/v${version}/${name}"
     mv "${tarball}.part" "$tarball"
   fi
+  echo "${sha}  ${tarball}" | sha256sum -c --status - || {
+    rm -f "$tarball"
+    die "SHA-256 mismatch for ${name} (expected ${sha}) - download removed"
+  }
   install -d -o "$RUNNER_UID" -g "$RUNNER_UID" "$dir"
   tar -xzf "$tarball" -C "$dir"
   chown -R "$RUNNER_UID:$RUNNER_UID" "$dir"

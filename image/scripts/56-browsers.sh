@@ -36,9 +36,12 @@ printf 'Package: *\nPin: origin packages.mozilla.org\nPin-Priority: 1000\n' >/et
 apt_install libasound2t64 firefox
 
 log "geckodriver"
-tag="$(gh_latest_tag mozilla/geckodriver)"
+release="$(curl -fsSL https://api.github.com/repos/mozilla/geckodriver/releases/latest)"
+tag="$(jq -r .tag_name <<<"$release")"
+tarball="geckodriver-${tag}-linux64.tar.gz"
+sha="$(jq -r --arg n "$tarball" '.assets[] | select(.name == $n) | .digest | ltrimstr("sha256:")' <<<"$release")"
 install -d /usr/local/share/gecko_driver
-curl -fsSL "https://github.com/mozilla/geckodriver/releases/download/${tag}/geckodriver-${tag}-linux64.tar.gz" \
-  | tar -xz -C /usr/local/share/gecko_driver
+tar -xzf "$(fetch "https://github.com/mozilla/geckodriver/releases/download/${tag}/${tarball}" "$sha")" \
+  -C /usr/local/share/gecko_driver
 ln -sf /usr/local/share/gecko_driver/geckodriver /usr/bin/geckodriver
 add_env GECKOWEBDRIVER /usr/local/share/gecko_driver
