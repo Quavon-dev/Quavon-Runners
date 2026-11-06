@@ -280,7 +280,7 @@ preflight() {
 
 check_terminal() {
   [[ "$NONINTERACTIVE" == 1 ]] && return 0
-  [[ -t 0 && -t 1 ]] || die "Needs an interactive terminal. Run it in a shell, or use NONINTERACTIVE=1 (see README)."
+  [[ -t 0 && -t 1 ]] || die "Needs an interactive terminal. Run it in a shell, or use NONINTERACTIVE=1 (docs/install-proxmox.md#non-interactive-install)."
   local rows cols
   read -r rows cols < <(stty size 2>/dev/null || echo "24 80")
   (( rows >= 24 && cols >= 80 )) || die "Terminal is ${cols}x${rows}; the dialogs need at least 80x24. Enlarge the window and retry."
