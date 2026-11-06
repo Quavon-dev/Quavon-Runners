@@ -15,7 +15,7 @@ echo '{ "features": { "containerd-snapshotter": false }, "storage-driver": "over
 host_install() {   # host_install <log> [VAR=value...]
   local log="$1"; shift
   rm -f /tmp/gha-runners-install-*.log
-  env NONINTERACTIVE=1 GH_URL=https://github.com/quavon-dev/quavon-docker-runners GH_TOKEN="$TOKEN" \
+  env NONINTERACTIVE=1 GH_URL=https://github.com/Quavon-dev/Quavon-Runners GH_TOKEN="$TOKEN" \
     RUNNER_COUNT=2 SIZE=small RUNNER_LABELS=docker "$@" bash /src/install.sh host 2>&1 | sed 's/\x1b\[[0-9;]*m//g' >"$log"
   return "${PIPESTATUS[0]}"
 }

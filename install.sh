@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Quavon Docker Runners - one-command GitHub Actions runner LXC for Proxmox VE.
+# Quavon Runners - fast, cached GitHub Actions runners for Proxmox VE and any Linux machine.
+# An open-source product of quavon.de.
 #
-#   bash -c "$(curl -fsSL https://raw.githubusercontent.com/quavon-dev/quavon-docker-runners/main/install.sh)"
+#   bash -c "$(curl -fsSL https://raw.githubusercontent.com/Quavon-dev/Quavon-Runners/main/install.sh)"
 #
 # Existing runner LXCs, one after another, never cancelling a running job:
 #   ... install.sh)" _ update <ctid>...        update them
@@ -16,11 +17,11 @@
 set -Eeuo pipefail
 shopt -s inherit_errexit
 
-REPO_URL="${REPO_URL:-https://github.com/quavon-dev/quavon-docker-runners.git}"
+REPO_URL="${REPO_URL:-https://github.com/Quavon-dev/Quavon-Runners.git}"
 REPO_BRANCH="${REPO_BRANCH:-main}"
 CT_REPO_DIR=/opt/quavon-docker-runners
-APP="GitHub Docker Runners"
-TITLE="Quavon ${APP}   |   Esc = cancel"
+APP="Quavon Runners"
+TITLE="${APP}   |   Esc = cancel"
 NONINTERACTIVE="${NONINTERACTIVE:-0}"
 
 # DEBUG=1 writes a full trace to /tmp/gha-install.log (dialogs stay usable).
@@ -140,7 +141,7 @@ ${BL}
  | |  _| | __| |_| | | | | '_ \\  | |_) | | | | '_ \\| '_ \\ / _ \\ '__/ __|
  | |_| | | |_|  _  | |_| | |_) | |  _ <| |_| | | | | | | |  __/ |  \\__ \\
   \\____|_|\\__|_| |_|\\__,_|_.__/  |_| \\_\\\\__,_|_| |_|_| |_|\\___|_|  |___/
-${CL}${DIM}  Docker-based GitHub Actions runners for Proxmox VE and Linux - by Quavon${CL}
+${CL}${DIM}  Cached GitHub Actions runners for Proxmox VE and Linux - an open-source product of quavon.de${CL}
 
 EOF
 }
@@ -750,7 +751,9 @@ create_ct() {   # uses CTID, CUR_HOSTNAME, CUR_IP
     --description "## ${APP}
 Managed with \`gha-runners\` inside the container (\`pct enter ${CTID}\`).
 
-GitHub: ${GH_URL}"
+GitHub: ${GH_URL}
+
+[Quavon Runners](https://github.com/Quavon-dev/Quavon-Runners), an open-source product of [quavon.de](https://quavon.de)"
   )
   [[ -n "$SSH_KEYS" ]] && args+=(--ssh-public-keys "$SSH_KEYS")
   # Fixed public resolvers: a DHCP-provided LAN resolver would be blocked anyway.

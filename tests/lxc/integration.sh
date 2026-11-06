@@ -30,7 +30,7 @@ chk "existing daemon.json settings kept" 'jq -e ".\"storage-driver\" == \"overla
 
 section "setup.sh register (with an invalid token: must fail cleanly)"
 cat >/root/.gha-bootstrap.env <<B
-GH_URL=https://github.com/quavon-dev/quavon-docker-runners
+GH_URL=https://github.com/Quavon-dev/Quavon-Runners
 GH_TOKEN=AAAAAAAAAAAAAAAAAAAAAAAAAAAA
 GH_PAT=''
 RUNNER_EPHEMERAL=0
@@ -90,10 +90,10 @@ else
   # simulate a registered runner: real binaries + fake registration files
   source <(sed -n "/^install_runner_binaries()/,/^}/p;/^latest_runner_version()/,/^}/p;/^runner_arch()/,/^}/p;/^info()/p;/^die()/p" /usr/local/bin/gha-runners)
   CACHE_DIR=/var/cache/gha-runners RUNNER_UID=1001 install_runner_binaries "$dir" >/dev/null
-  echo '{"agentId":1,"agentName":"itest-1","serverUrl":"https://pipelinesghubeus1.actions.githubusercontent.com/x/","gitHubUrl":"https://github.com/quavon-dev/quavon-docker-runners","workFolder":"_work"}' >"$dir/.runner"
+  echo '{"agentId":1,"agentName":"itest-1","serverUrl":"https://pipelinesghubeus1.actions.githubusercontent.com/x/","gitHubUrl":"https://github.com/Quavon-dev/Quavon-Runners","workFolder":"_work"}' >"$dir/.runner"
   chown -R 1001:1001 "$dir"
   install -d -m 0700 /etc/gha-runners/runners
-  printf 'RUNNER_NAME=%s\nRUNNER_DIR=%s\nGITHUB_URL=https://github.com/quavon-dev/quavon-docker-runners\nRUNNER_LABELS=docker\nRUNNER_GROUP=\nRUNNER_EPHEMERAL=0\n' "$name" "$dir" >/etc/gha-runners/runners/$name.env
+  printf 'RUNNER_NAME=%s\nRUNNER_DIR=%s\nGITHUB_URL=https://github.com/Quavon-dev/Quavon-Runners\nRUNNER_LABELS=docker\nRUNNER_GROUP=\nRUNNER_EPHEMERAL=0\n' "$name" "$dir" >/etc/gha-runners/runners/$name.env
   chmod 600 /etc/gha-runners/runners/$name.env
 fi
 systemctl start "gha-runner@$name"
