@@ -85,7 +85,7 @@ chk "ghcr.io image pulled through the ghcr mirror (rc=$rc)" '[[ $rc == 0 ]] && d
 chk "the mirror's name is not left behind" '! docker images --format "{{.Repository}}" | grep -q 29174'
 accept="Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json"
 chk "quay.io and mcr.microsoft.com mirrors fetch manifests" 'curl -fsS -o /dev/null -H "$accept" "http://${bip}:29175/v2/prometheus/busybox/manifests/latest" && curl -fsS -o /dev/null -H "$accept" "http://${bip}:29176/v2/mcr/hello-world/manifests/latest"'
-curl -s -D /tmp/private.h -o /dev/null -H "Authorization: Basic aXRlc3Q6c2VjcmV0" "http://${bip}:29174/v2/quavon-dev/itest-private/manifests/latest"
+curl -s -D /tmp/private.h -o /dev/null -H "Authorization: Basic $(printf itest:dummy | base64)" "http://${bip}:29174/v2/quavon-dev/itest-private/manifests/latest"
 chk "mirrors never ask for credentials and serve nothing private" 'grep -q "^HTTP/1.1 404" /tmp/private.h && ! grep -qi "^www-authenticate" /tmp/private.h'
 docker stats --no-stream --format '     {{.Name}}: {{.MemUsage}}' gha-cache-actions gha-cache-mirror gha-cache-apt gha-cache-ghcr gha-cache-quay gha-cache-mcr
 
