@@ -597,6 +597,8 @@ clear_caches() {
 
 # Keeps the shared caches within the budget the host set. The actions cache
 # evicts by itself; mirrors and the apt proxy are cleared by the LXC serving them.
+# A cache is moved aside before its server stops: another LXC takes the lock at
+# once and must start on an empty directory, not one that is being deleted.
 trim_shared_caches() {
   shared_cache || return 0
   local used budget svc
@@ -608,8 +610,10 @@ trim_shared_caches() {
   for svc in $CACHE_SERVICES; do
     [[ "$svc" == actions ]] && continue
     docker inspect "gha-cache-${svc}" >/dev/null 2>&1 || continue
+    rm -rf --one-file-system "${SHARED_DIR:?}/${svc}-cache.old"
+    mv "${SHARED_DIR}/${svc}-cache" "${SHARED_DIR}/${svc}-cache.old" 2>/dev/null || true
     systemctl stop "gha-runners-cache@${svc}.service"
-    rm -rf --one-file-system "${SHARED_DIR:?}/${svc}-cache"
+    rm -rf --one-file-system "${SHARED_DIR:?}/${svc}-cache.old"
     systemctl start "gha-runners-cache@${svc}.service"
   done
 }
@@ -897,6 +901,7 @@ run_cache_server() {   # run_cache_server <service> <data dir> <docker0 address>
       exec docker run "${hardening[@]}" --memory 64m -e GOMEMLIMIT=48MiB \
         -e REGISTRY_HTTP_ADDR="$(cache_addr "$svc")" -e REGISTRY_HTTP_DEBUG_ADDR= \
         -e REGISTRY_PROXY_REMOTEURL="$upstream" -e REGISTRY_PROXY_TTL="$ttl" -e REGISTRY_LOG_LEVEL=warn \
+        -e REGISTRY_STORAGE_CACHE_BLOBDESCRIPTOR= \
         -v "${dir}:/var/lib/registry" "$DOCKER_MIRROR_IMAGE" ;;
   esac
 }

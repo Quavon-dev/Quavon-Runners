@@ -80,6 +80,12 @@ chk "mirrors reachable from a bridge container" 'docker run --rm busybox sh -c "
 chk "no cache on loopback or all interfaces" '! ss -ltnH | awk "{ print \$4 }" | grep -E ":2917[0-9]$" | grep -qv "^${bip}:"'
 docker image rm busybox >/dev/null 2>&1; docker pull -q busybox >/dev/null 2>&1
 chk "docker pulls go through the mirror" '[[ -n "$(find /var/lib/gha-runners/mirror-cache -type f -name data | head -1)" ]]'
+reg=/var/lib/gha-runners/mirror-cache/docker/registry/v2
+layer="$(find "$reg/repositories" -path "*/_layers/sha256/*/link" | head -1)"
+digest="$(basename "$(dirname "$layer")")" repo="${layer#"$reg/repositories/"}" repo="${repo%%/_layers/*}"
+size="$(stat -c %s "$reg/blobs/sha256/${digest:0:2}/${digest}/data")"
+rm -rf "${reg:?}/blobs/sha256/${digest:0:2}/${digest}"
+chk "a blob deleted under the running mirror is fetched again, not served empty" '[[ $(curl -s -o /dev/null -w "%{size_download}" "http://${bip}:29172/v2/${repo}/blobs/sha256:${digest}") == "$size" ]]'
 (source <(sed '$d' /usr/local/bin/gha-runners); load_config; pull_through_mirror ghcr.io/containerd/busybox:1.36) >/tmp/ghcr.log 2>&1; rc=$?
 chk "ghcr.io image pulled through the ghcr mirror (rc=$rc)" '[[ $rc == 0 ]] && docker image inspect ghcr.io/containerd/busybox:1.36 >/dev/null && [[ -d /var/lib/gha-runners/ghcr-cache/docker/registry/v2/repositories/containerd/busybox ]]'
 chk "the mirror's name is not left behind" '! docker images --format "{{.Repository}}" | grep -q 29174'

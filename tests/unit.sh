@@ -120,6 +120,22 @@ ok "caches on by default" '(for s in $CACHE_SERVICES; do cache_enabled "$s" || e
 ok "caches switch off"   '! LOCAL_ACTIONS_CACHE=0 cache_enabled actions && ! DOCKER_HUB_MIRROR=0 cache_enabled mirror && ! APT_PROXY=0 cache_enabled apt && ! GHCR_MIRROR=0 cache_enabled ghcr && ! QUAY_MIRROR=0 cache_enabled quay && ! MCR_MIRROR=0 cache_enabled mcr'
 ok "every cache has its own port" '[[ $(for s in $CACHE_SERVICES; do cache_port "$s"; done | sort -u | wc -l) == $(wc -w <<<"$CACHE_SERVICES") ]]'
 
+# shared cache trim: an LXC taking over the lock never starts on a cache being deleted
+saved_shared="$SHARED_DIR" SHARED_DIR="$(mktemp -d)"
+mkdir -p "$SHARED_DIR/package-cache" "$SHARED_DIR/git" "$SHARED_DIR/mirror-cache/docker" "$SHARED_DIR/mirror-cache.old"
+touch "$SHARED_DIR/mirror-cache.old/left-by-a-crash"
+shared_cache() { :; }
+shared_budget_mb() { echo 1; }
+du() { printf '1\t%s\n' "$SHARED_DIR"; }
+info() { :; }
+docker() { [[ "$*" == "inspect gha-cache-mirror" ]]; }
+systemctl() { echo "$1 $([[ -e $SHARED_DIR/mirror-cache ]] && echo cache-in-place || echo cache-moved)" >>"$SHARED_DIR/calls"; }
+trim_shared_caches
+ok "trim: the cache is moved away before its server stops" '[[ $(cat "$SHARED_DIR/calls") == "stop cache-moved"$'"'"'\n'"'"'"start cache-moved" ]]'
+ok "trim: nothing of the old cache is left" '[[ ! -e $SHARED_DIR/mirror-cache && ! -e $SHARED_DIR/mirror-cache.old ]]'
+unset -f shared_cache shared_budget_mb du info docker systemctl
+rm -rf "$SHARED_DIR"; SHARED_DIR="$saved_shared"
+
 # prebuilt image: only for a clean image/ tree of a git checkout
 repo="$(mktemp -d)"; mkdir -p "$repo/image"; echo a >"$repo/image/f"
 git -C "$repo" init -q && git -C "$repo" add . && git -C "$repo" -c user.email=t@t -c user.name=t commit -qm i
